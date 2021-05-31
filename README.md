@@ -1,5 +1,5 @@
 # dbdatagen - Generador de datos para la base de datos de Scouts con Python
-Giovanni Dueck
+Giovanni Dueck \
 Adrian Ramirez
 
 # Dependencies
