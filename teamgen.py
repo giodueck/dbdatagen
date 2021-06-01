@@ -1,6 +1,4 @@
 from datetime import date
-from persongen import leadergen
-from entitygen import division
 import psycopg2
 import namegenerator
 
