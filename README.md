@@ -1,6 +1,6 @@
 # dbdatagen - Generador de datos para la base de datos de Scouts con Python
 Giovanni Dueck \
-Adrian Ramirez \
+Adrian Ramirez 
 
 Compatible con el diseño del Challenge 5
 

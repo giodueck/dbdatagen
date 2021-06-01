@@ -5,7 +5,7 @@ import names
 from miscgen import gendate
 
 def generate(c: int, minBirthday: date, maxBirthday: date, gender: str = None) -> str:
-    '''Generate the SQL command to insert c amount of persons in deststr.
+    '''Generate the SQL command to insert c amount of persons.
         c: count, number of rows to generate
         minBirthday, maxBirthday: lower and upper bound of possible birthdays for date_of_birth
         gender: string that holds gender ("M" or "F")'''
@@ -55,3 +55,21 @@ def generate(c: int, minBirthday: date, maxBirthday: date, gender: str = None) -
     retstr += ";"
 
     return retstr
+
+def leadergen(person_id: int, is_junior: bool) -> str:
+    '''Generate the SQL command to make the person person_id a leader.'''
+
+    # sql format is
+    # "INSERT INTO leader (person_id, is_junior)
+    #      VALUES (int, bool);"
+
+    return "INSERT INTO leader (person_id, is_junior) VALUES (" + str(person_id) + ',' + str(is_junior) + ");"
+
+def scoutgen(person_id: int, team_id: int) -> str:
+    '''Generate the SQL command to make the person person_id a scout.'''
+
+    # sql format is
+    # "INSERT INTO scout (person_id, team_id)
+    #      VALUES (int, int);"
+
+    return "INSERT INTO scout (person_id, team_id) VALUES (" + str(person_id) + ',' + str(team_id) + ");"
