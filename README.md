@@ -5,6 +5,6 @@ Adrian Ramirez
 Compatible con el diseño del Challenge 5
 
 # Dependencies
-command: "pip install <pkgname>"
+command: "pip install pkgname"
 - psycopg2
 - names
