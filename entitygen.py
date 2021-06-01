@@ -1,5 +1,6 @@
 import placenamegen as pngen
 import psycopg2
+import names
 
 class office:
     def generate(cursor, c: int, leader_ids: list, vice_leader_ids: list, ids: list, region: str = None) -> str:
@@ -32,7 +33,7 @@ class outpost:
     def generate(cursor, c: int, office_id: int, leader_ids: list, vice_leader_ids: list, ids: list, first_outpost_number: int = None) -> str:
         '''Generate the SQL command to insert a new outpost.'''
 
-        retstr = "INSERT INTO outpost (outpost_id, office_id, leader_id, vice_leader_id, outpost_number) VALUES"
+        retstr = "INSERT INTO outpost (outpost_id, office_id, leader_id, vice_leader_id, outpost_number, name) VALUES"
 
         for i in range(c):
             # formatting
@@ -46,9 +47,12 @@ class outpost:
             ids.append(id)
             if i == 0 and first_outpost_number is None:
                 first_outpost_number = id
+            
+            # name
+            n = names.get_last_name()
 
             # add to SQL string
-            retstr += "(" + str(id) + ',' + str(office_id) + ',' + str(leader_ids[i]) + ',' + str(vice_leader_ids[i]) + ',' + str(first_outpost_number + i) + ")"
+            retstr += "(" + str(id) + ',' + str(office_id) + ',' + str(leader_ids[i]) + ',' + str(vice_leader_ids[i]) + ',' + str(first_outpost_number + i) + ",'" + n + "')"
         
         retstr += ";"
         return retstr

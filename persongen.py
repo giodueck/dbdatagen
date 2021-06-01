@@ -2,7 +2,7 @@ from datetime import date
 from random import randrange as rr
 import psycopg2
 import names
-from miscgen import gendate
+import miscgen
 
 def generate(cursor, c: int, minBirthday: date, maxBirthday: date, ids: list, gender: str = None) -> str:
     '''Generate the SQL command to insert c amount of persons.
@@ -52,7 +52,7 @@ def generate(cursor, c: int, minBirthday: date, maxBirthday: date, ids: list, ge
         ln = names.get_last_name()
 
         # date_of_birth
-        dob = gendate(minBirthday, maxBirthday)
+        dob = miscgen.gendate(minBirthday, maxBirthday)
 
         # add to SQL string
         retstr += "('" + str(id) + "','" + fn + "','" + ln + "','" + str(dob) + "','" + gender + "')"
@@ -91,7 +91,7 @@ def leadergen(cursor, c: int, person_ids: list, is_junior: bool, ids: list) -> s
 
     return retstr
 
-def scoutgen(cursor, c: int, person_ids: list, team_id: int, ids: list) -> str:
+def scoutgen(cursor, c: int, person_ids: list, ids: list, team_id: int = None) -> str:
     '''Generate the SQL command to make the person person_id a scout.'''
 
     # sql format is
@@ -99,6 +99,9 @@ def scoutgen(cursor, c: int, person_ids: list, team_id: int, ids: list) -> str:
     #      VALUES (int, int);"
 
     retstr = "INSERT INTO scout (scout_id, person_id, team_id) VALUES "
+
+    if team_id is None:
+        team_id = 'null'
 
     for i in range(c):
         # formatting
