@@ -15,5 +15,6 @@ Con respecto a tablas historicas: las tablas cuyos nombres terminan en _history 
 
 # Dependencies
 command: "pip install pkgname"
-- psycopg2
-- names
+- psycopg2: interface for postgresql
+- names: name generator for persongen
+- namegenerator: name generator for team name
