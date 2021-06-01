@@ -4,10 +4,12 @@ import psycopg2
 # https://www.psycopg.org/docs/usage.html
 
 # Connect to an existing database
-conn = psycopg2.connect("dbname=datagentest user=postgres password=142857")
+conn = psycopg2.connect(database="datagentest", user="postgres", password=" ")
 
 # Open a cursor to perform db operations
 cursor = conn.cursor()
+
+# Cuando tenga hechas todas las funciones para cada tabla el script en si va a estar aqui
 
 
 # Commit

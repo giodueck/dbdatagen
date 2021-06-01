@@ -9,7 +9,7 @@ class office:
         if region is None:
             region = pngen.generate()
         
-        return retstr + str(leader_id) + ',' + str(vice_leader_id) + ',' + region + ");"
+        return retstr + str(leader_id) + ',' + str(vice_leader_id) + ",'" + region + "');"
 
 class outpost:
     def generate(office_id: int, leader_id: int, vice_leader_id: int, outpost_number: int) -> str:
