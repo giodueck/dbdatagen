@@ -1,4 +1,5 @@
 import placenamegen as pngen
+import psycopg2
 
 class office:
     def generate(leader_id: int, vice_leader_id: int, region: str = None) -> str:
