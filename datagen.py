@@ -91,6 +91,9 @@ for i in range(len(aids)):
     rids.append(list())
     cursor.execute(ag.requirementgen(cursor, 3, rids[i], aids[i]))
 
+# assign met requirements
+
+
 # Commit
 conn.commit()
 

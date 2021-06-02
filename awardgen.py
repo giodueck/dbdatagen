@@ -1,6 +1,6 @@
 import miscgen
-from os import name
 import namegenerator
+from datetime import date
 
 # Una idea posible para diferenciar awards de diferentes divisiones o para lideres es agregar una columna a award
 def generate(cursor, c: int, ids: list, division_category_id: int = None, parent_award_id: int = None) -> str:
@@ -65,6 +65,31 @@ def requirementgen(cursor, c: int, ids: list, award_id: int) -> str:
         
         # add to SQL string
         retstr += "(" + str(id) + ',' + str(award_id) + ",'" + des + "')"
+
+    retstr += ';'
+
+    return retstr
+
+def giveRequirement(person_id: int, rids: list, leader_id: int, minDate: date, maxDate: date):
+    '''Generate the SQL command to insert new rows into person_requirement.
+        person_id: person to be given the requirements       
+        rids: list of requirements
+        leader_id: leader that certifies the requirement is met
+        min/maxDate: range of generated dates
+    '''
+
+    retstr = "INSERT INTO person_requirement (person_id, requirement_id, \"date\", leader_id) VALUES "
+
+    for i in range(len(rids)):
+        # formatting
+        if i > 0:
+            retstr += ", "
+        
+        # date
+        rd = miscgen.gendate(minDate, maxDate)
+        
+        # add to SQL string
+        retstr += "(" + str(person_id) + ',' + str(rids[i]) + ",'" + str(rd) + "'," + str(leader_id) + ")"
 
     retstr += ';'
 
