@@ -1,5 +1,4 @@
 from datetime import date
-import psycopg2
 import namegenerator
 
 def generate(cursor, c: int, division_id: int, leader_ids: list, ids: list, gender: str, start_date: date) -> str:

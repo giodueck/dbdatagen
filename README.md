@@ -3,7 +3,7 @@ Giovanni Dueck \
 Adrian Ramirez 
 
 # Cambios al diseño
-!NO! Compatible con el diseño del Challenge 5
+!NO! Compatible con el diseño del Challenge 5 \
 Usar el .architect en el repositorio
 - award: columna division_category relaciona a cada award con una categoria de scouts. Para los awards de lideres se deja en null.
 

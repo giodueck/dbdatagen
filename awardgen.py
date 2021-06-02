@@ -1,7 +1,6 @@
 import miscgen
 from os import name
 import namegenerator
-import psycopg2
 
 # Una idea posible para diferenciar awards de diferentes divisiones o para lideres es agregar una columna a award
 def generate(cursor, c: int, ids: list, division_category_id: int = None, parent_award_id: int = None) -> str:

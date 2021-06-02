@@ -1,6 +1,5 @@
 from datetime import date
 from random import randrange as rr
-import psycopg2
 import names
 import miscgen
 

@@ -1,5 +1,4 @@
 import placenamegen as pngen
-import psycopg2
 import names
 
 class office:
