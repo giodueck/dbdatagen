@@ -2,7 +2,10 @@
 Giovanni Dueck \
 Adrian Ramirez 
 
-Compatible con el diseño del Challenge 5
+# Cambios al diseño
+!NO! Compatible con el diseño del Challenge 5
+Usar el .architect en el repositorio
+- award: columna division_category relaciona a cada award con una categoria de scouts. Para los awards de lideres se deja en null.
 
 # Funcionamiento
 Para ejecutar el programa ejecutar el script datagen.py
@@ -13,6 +16,8 @@ teamgen: funciones para crear y modificar un team.
 
 entitygen: cada clase crea filas en la tabla de su nombre, division adicionalmente crea filas en division_category. Funciona de forma similar a persongen.
 
+awardgen: generate crea awards con nombres aleatorios, y requirementgen genera requirements para un award usando un generador de oraciones.
+
 Con respecto a tablas historicas: las tablas cuyos nombres terminan en _history deben ser actualizadas a la par que se generan datos en otras funciones, eso esta considerado para el futuro 
 
 # Dependencies
@@ -20,3 +25,4 @@ command: "pip install pkgname"
 - psycopg2: interface for postgresql
 - names: name generator for persongen
 - namegenerator: name generator for team name
+- essential-generator: sentence generator for requirement description
