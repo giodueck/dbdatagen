@@ -7,6 +7,9 @@ Adrian Ramirez
 Usar el .architect en el repositorio
 - award: columna division_category relaciona a cada award con una categoria de scouts. Para los awards de lideres se deja en null.
 
+Un backup se encuentra en el archivo dgtempty. Para restaurar el backup seleccionar formato Tar. \
+La funcion clearall() elimina todos los datos y reestablece las secuencias para facilitar pruebas.
+
 # Funcionamiento
 Para ejecutar el programa ejecutar el script datagen.py
 
@@ -18,7 +21,7 @@ entitygen: cada clase crea filas en la tabla de su nombre, division adicionalmen
 
 awardgen: generate crea awards con nombres aleatorios, y requirementgen genera requirements para un award usando un generador de oraciones. giveRequirement y genAward generan filas en person_requirement y person_award.
 
-Con respecto a tablas historicas: las tablas cuyos nombres terminan en _history deben ser actualizadas a la par que se generan datos en otras funciones, eso esta considerado para el futuro 
+Con respecto a tablas historicas: las tablas cuyos nombres terminan en _history deben ser actualizadas a la par que se generan datos en otras funciones, eso esta considerado para el futuro.
 
 # Dependencies
 command: "pip install pkgname"
