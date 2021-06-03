@@ -61,7 +61,7 @@ def requirementgen(cursor, c: int, ids: list, award_id: int) -> str:
         ids.append(id)
         
         # descrption
-        des = miscgen.gensentence()
+        des = namegenerator.gen()
         
         # add to SQL string
         retstr += "(" + str(id) + ',' + str(award_id) + ",'" + des + "')"
@@ -70,7 +70,7 @@ def requirementgen(cursor, c: int, ids: list, award_id: int) -> str:
 
     return retstr
 
-def giveRequirement(person_id: int, rids: list, leader_id: int, minDate: date, maxDate: date):
+def giveRequirements(person_id: int, rids: list, leader_id: int, minDate: date, maxDate: date):
     '''Generate the SQL command to insert new rows into person_requirement.
         person_id: person to be given the requirements       
         rids: list of requirements
@@ -90,6 +90,31 @@ def giveRequirement(person_id: int, rids: list, leader_id: int, minDate: date, m
         
         # add to SQL string
         retstr += "(" + str(person_id) + ',' + str(rids[i]) + ",'" + str(rd) + "'," + str(leader_id) + ")"
+
+    retstr += ';'
+
+    return retstr
+
+def giveAwards(person_id: int, aids: list, leader_id: int, minDate: date, maxDate: date):
+    '''Generate the SQL command to insert new rows into person_award.
+        person_id: person to be given the awards
+        aids: list of awards
+        leader_id: leader that certifies the award
+        min/maxDate: range of generated dates
+    '''
+
+    retstr = "INSERT INTO person_award (person_id, award_id, \"date\", leader_id) VALUES "
+
+    for i in range(len(aids)):
+        # formatting
+        if i > 0:
+            retstr += ", "
+        
+        # date
+        rd = miscgen.gendate(minDate, maxDate)
+        
+        # add to SQL string
+        retstr += "(" + str(person_id) + ',' + str(aids[i]) + ",'" + str(rd) + "'," + str(leader_id) + ")"
 
     retstr += ';'
 

@@ -15,7 +15,11 @@ conn = psycopg2.connect(database="datagentest", user="postgres", password=" ")
 cursor = conn.cursor()
 
 # Lists to store created ids
-pids = list()
+lpids = list()
+tlpids = list()
+spids1 = list()
+spids2 = list()
+tlids = list()
 lids = list()
 sids = list()
 tids = list()
@@ -32,8 +36,8 @@ print("Generating rows for...")
 
 # leaders
 print("                   ...person->leader")
-cursor.execute(pg.generate(cursor, 10, date(1990, 1, 1), date(2000, 12, 31), pids))
-cursor.execute(pg.leadergen(cursor, 10, pids, False, lids))
+cursor.execute(pg.generate(cursor, 10, date(1990, 1, 1), date(2000, 12, 31), lpids))
+cursor.execute(pg.leadergen(cursor, 10, lpids, False, lids))
 
 # offices
 print("                   ...office")
@@ -59,27 +63,22 @@ cursor.execute(eg.division.generate(cursor, 2, dcids[0], opids, dl, dvl, dids))
 # teams
     # leaders
 print("                   ...person->leader->team")
-pids.clear()
-lids.clear()
-cursor.execute(pg.generate(cursor, 1, date(1990, 1, 1), date(2000, 12, 31), pids, 'M'))
-cursor.execute(pg.generate(cursor, 1, date(1990, 1, 1), date(2000, 12, 31), pids, 'F'))
-cursor.execute(pg.leadergen(cursor, 2, pids, False, lids))
+cursor.execute(pg.generate(cursor, 1, date(1990, 1, 1), date(2000, 12, 31), tlpids, 'M'))
+cursor.execute(pg.generate(cursor, 1, date(1990, 1, 1), date(2000, 12, 31), tlpids, 'F'))
+cursor.execute(pg.leadergen(cursor, 2, tlpids, False, tlids))
 
     # teams
 print("                   ...team")
-cursor.execute(tg.generate(cursor, 1, dids[0], lids, tids, 'M', date(2021, 6, 1)))
-lids.pop(0)
-cursor.execute(tg.generate(cursor, 1, dids[0], lids, tids, 'F', date(2021, 6, 1)))
-lids.pop(0)
+cursor.execute(tg.generate(cursor, 1, dids[0], tlids, tids, 'M', date(2021, 6, 1)))
+auxtlids = [tlids[1]]
+cursor.execute(tg.generate(cursor, 1, dids[0], auxtlids, tids, 'F', date(2021, 6, 1)))
 
 # scouts
 print("                   ...person->scout")
-pids.clear()
-cursor.execute(pg.generate(cursor, 10, date(2005, 1, 1), date(2008, 12, 31), pids, 'M'))
-cursor.execute(pg.scoutgen(cursor, 10, pids, sids, tids[0]))
-pids.clear()
-cursor.execute(pg.generate(cursor, 10, date(2005, 1, 1), date(2008, 12, 31), pids, 'F'))
-cursor.execute(pg.scoutgen(cursor, 10, pids, sids, tids[1]))
+cursor.execute(pg.generate(cursor, 10, date(2005, 1, 1), date(2008, 12, 31), spids1, 'M'))
+cursor.execute(pg.scoutgen(cursor, 10, spids1, sids, tids[0]))
+cursor.execute(pg.generate(cursor, 10, date(2005, 1, 1), date(2008, 12, 31), spids2, 'F'))
+cursor.execute(pg.scoutgen(cursor, 10, spids2, sids, tids[1]))
 
 # awards
 print("                   ...award")
@@ -92,7 +91,28 @@ for i in range(len(aids)):
     cursor.execute(ag.requirementgen(cursor, 3, rids[i], aids[i]))
 
 # assign met requirements
+print("                   ...person_requirement")
+for i in range(len(spids1)):
+    for j in range(len(aids)):
+        redrids = [rids[j][0]]
+        if i % 2 == 0:
+            redrids.append(rids[j][1])
+            if i % 4 == 0:
+                redrids.append(rids[j][2])
 
+        cursor.execute(ag.giveRequirements(spids1[i], redrids, tlids[0], date(2020,1,1), date(2020,12,31)))
+        cursor.execute(ag.giveRequirements(spids2[i], redrids, tlids[1], date(2020,1,1), date(2020,12,31)))
+
+# assign awards
+print("                   ...person_award")
+for i in range(len(spids1)):
+    redaids = [aids[0]]
+    if i % 2 == 0:
+        redaids.append(aids[1])
+        if i % 4 == 0:
+            redaids.append(aids[2])
+    cursor.execute(ag.giveAwards(spids1[i], redaids, tlids[0], date(2020,1,1), date(2020,12,31)))
+    cursor.execute(ag.giveAwards(spids2[i], redaids, tlids[1], date(2020,1,1), date(2020,12,31)))
 
 # Commit
 conn.commit()

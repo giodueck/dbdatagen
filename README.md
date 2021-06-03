@@ -16,7 +16,7 @@ teamgen: funciones para crear y modificar un team.
 
 entitygen: cada clase crea filas en la tabla de su nombre, division adicionalmente crea filas en division_category. Funciona de forma similar a persongen.
 
-awardgen: generate crea awards con nombres aleatorios, y requirementgen genera requirements para un award usando un generador de oraciones.
+awardgen: generate crea awards con nombres aleatorios, y requirementgen genera requirements para un award usando un generador de oraciones. giveRequirement y genAward generan filas en person_requirement y person_award.
 
 Con respecto a tablas historicas: las tablas cuyos nombres terminan en _history deben ser actualizadas a la par que se generan datos en otras funciones, eso esta considerado para el futuro 
 
@@ -24,5 +24,4 @@ Con respecto a tablas historicas: las tablas cuyos nombres terminan en _history 
 command: "pip install pkgname"
 - psycopg2: interface for postgresql
 - names: name generator for persongen
-- namegenerator: name generator for team name
-- essential-generator: sentence generator for requirement description
+- namegenerator: name generator for team name and requirement description
