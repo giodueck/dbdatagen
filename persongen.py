@@ -63,7 +63,7 @@ def generate(cursor, c: int, minBirthday: date, maxBirthday: date, ids: list, ge
 
     return retstr
 
-def leadergen(cursor, c: int, person_ids: list, is_junior: bool, ids: list) -> str:
+def leadergen(cursor, c: int, person_ids: list, is_junior: bool, ids: list, historyids: list, start_date: date) -> str:
     '''Generate the SQL command to make the person person_id a leader.'''
 
     # sql format is
@@ -71,11 +71,13 @@ def leadergen(cursor, c: int, person_ids: list, is_junior: bool, ids: list) -> s
     #      VALUES (int, bool);"
 
     retstr = "INSERT INTO leader (leader_id, person_id, is_junior) VALUES "
+    historystr = "INSERT INTO leader_history (leader_history_id, person_id, start_date, is_junior) VALUES "
 
     for i in range(c):
         # formatting
         if i > 0:
             retstr += ", "
+            historystr += ", "
         
         # leader_id
         cursor.execute("SELECT * FROM nextval('leader_leader_id_seq_1_1');")
@@ -83,14 +85,22 @@ def leadergen(cursor, c: int, person_ids: list, is_junior: bool, ids: list) -> s
         id = seq[0]
         ids.append(id)
 
-        # add to SQL string
+        # leader_history_id
+        cursor.execute("SELECT * FROM nextval('leader_history_leader_history_id_seq');")
+        seq = cursor.fetchone()
+        hid = seq[0]
+        historyids.append(hid)
+
+        # add to SQL strings
         retstr += "(" + str(id) + "," + str(person_ids[i]) + "," + str(is_junior) + ")"
+        historystr += "(" + str(hid) + "," + str(person_ids[i]) + ",'" + str(start_date) + "'," + str(is_junior) + ")"
 
-    retstr += ";"
+    retstr += "; "
+    historystr += ";"
 
-    return retstr
+    return retstr + historystr
 
-def scoutgen(cursor, c: int, person_ids: list, ids: list, team_id: int = None) -> str:
+def scoutgen(cursor, c: int, person_ids: list, ids: list, historyids: list, start_date: date, team_id: int = None) -> str:
     '''Generate the SQL command to make the person person_id a scout.'''
 
     # sql format is
@@ -98,6 +108,7 @@ def scoutgen(cursor, c: int, person_ids: list, ids: list, team_id: int = None) -
     #      VALUES (int, int);"
 
     retstr = "INSERT INTO scout (scout_id, person_id, team_id) VALUES "
+    historystr = "INSERT INTO scout_history (scout_history_id, person_id, start_date) VALUES "
 
     if team_id is None:
         team_id = 'null'
@@ -106,6 +117,7 @@ def scoutgen(cursor, c: int, person_ids: list, ids: list, team_id: int = None) -
         # formatting
         if i > 0:
             retstr += ", "
+            historystr += ", "
         
         # scout_id
         cursor.execute("SELECT * FROM nextval('scout_scout_id_seq');")
@@ -113,9 +125,17 @@ def scoutgen(cursor, c: int, person_ids: list, ids: list, team_id: int = None) -
         id = seq[0]
         ids.append(id)
 
+        # scout_history_id
+        cursor.execute("SELECT * FROM nextval('scout_history_scout_history_id_seq');")
+        seq = cursor.fetchone()
+        hid = seq[0]
+        historyids.append(hid)
+
         # add to SQL string
         retstr += "(" + str(id) + "," + str(person_ids[i]) + "," + str(team_id) + ")"
+        historystr += "(" + str(hid) + "," + str(person_ids[i]) + ",'" + str(start_date) + "')"
 
-    retstr += ";"
+    retstr += "; "
+    historystr += ";"
 
-    return retstr
+    return retstr + historystr

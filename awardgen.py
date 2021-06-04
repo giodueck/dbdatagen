@@ -61,7 +61,7 @@ def requirementgen(cursor, c: int, ids: list, award_id: int) -> str:
         ids.append(id)
         
         # descrption
-        des = namegenerator.gen()
+        des = namegenerator.gen()   # generar una frase usando cadenas de Markov tomaba tiempo inecesariamente
         
         # add to SQL string
         retstr += "(" + str(id) + ',' + str(award_id) + ",'" + des + "')"

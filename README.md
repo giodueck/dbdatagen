@@ -12,6 +12,7 @@ La funcion clearall() elimina todos los datos y reestablece las secuencias para 
 
 # Funcionamiento
 Para ejecutar el programa ejecutar el script datagen.py
+ATENCION: El script elimina todos los datos existentes antes de cargar datos nuevos!
 
 persongen: generate crea una persona, leadergen y scoutgen generan filas a partir de una lista de person_ids. Para obtener un person/scout/leader_id valido se consulta e incrementa la secuencia asociada.
 

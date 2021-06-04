@@ -19,9 +19,14 @@ lpids = list()
 tlpids = list()
 spids1 = list()
 spids2 = list()
-tlids = list()
+
 lids = list()
+lhids = list()
+tlids = list()
+tlhids = list()
+
 sids = list()
+shids = list()
 tids = list()
 
 oids = list()
@@ -32,12 +37,16 @@ dids = list()
 aids = list()
 rids = list()
 
+# clear existing data
+print("Clearing data...")
+cursor.execute("SELECT * FROM clearall();")
+
 print("Generating rows for...")
 
 # leaders
 print("                   ...person->leader")
 cursor.execute(pg.generate(cursor, 10, date(1990, 1, 1), date(2000, 12, 31), lpids))
-cursor.execute(pg.leadergen(cursor, 10, lpids, False, lids))
+cursor.execute(pg.leadergen(cursor, 10, lpids, False, lids, lhids, date(2021, 3, 14)))
 
 # offices
 print("                   ...office")
@@ -65,7 +74,7 @@ cursor.execute(eg.division.generate(cursor, 2, dcids[0], opids, dl, dvl, dids))
 print("                   ...person->leader->team")
 cursor.execute(pg.generate(cursor, 1, date(1990, 1, 1), date(2000, 12, 31), tlpids, 'M'))
 cursor.execute(pg.generate(cursor, 1, date(1990, 1, 1), date(2000, 12, 31), tlpids, 'F'))
-cursor.execute(pg.leadergen(cursor, 2, tlpids, False, tlids))
+cursor.execute(pg.leadergen(cursor, 2, tlpids, False, tlids, tlhids, date(2021, 3, 14)))
 
     # teams
 print("                   ...team")
@@ -76,9 +85,9 @@ cursor.execute(tg.generate(cursor, 1, dids[0], auxtlids, tids, 'F', date(2021, 6
 # scouts
 print("                   ...person->scout")
 cursor.execute(pg.generate(cursor, 10, date(2005, 1, 1), date(2008, 12, 31), spids1, 'M'))
-cursor.execute(pg.scoutgen(cursor, 10, spids1, sids, tids[0]))
+cursor.execute(pg.scoutgen(cursor, 10, spids1, sids, shids, date(2021, 3, 18), tids[0]))
 cursor.execute(pg.generate(cursor, 10, date(2005, 1, 1), date(2008, 12, 31), spids2, 'F'))
-cursor.execute(pg.scoutgen(cursor, 10, spids2, sids, tids[1]))
+cursor.execute(pg.scoutgen(cursor, 10, spids2, sids, shids, date(2021, 3, 18), tids[1]))
 
 # awards
 print("                   ...award")
