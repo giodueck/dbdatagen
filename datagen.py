@@ -139,10 +139,10 @@ for id in leaverlpids:
 cursor.execute(pg.leaderRejoin(cursor, leaverlpids[0], False, leaverlhids, date(2021, 5, 15)))
 print("                   ...person->scout->leave")
 cursor.execute(pg.generate(cursor, 2, date(2005, 1, 1), date(2008, 12, 31), leaverspids, 'F'))
-cursor.execute(pg.scoutgen(cursor, 2, leaverspids, leaversids, leavershids, date(2021, 3, 18)))
+cursor.execute(pg.scoutgen(cursor, 2, leaverspids, leaversids, leavershids, date(2021, 3, 18), tids[1], date(2021, 3, 18), sthids))
 for id in leaverspids:
-    cursor.execute(pg.scoutLeave(id, date(2021, 4, 15)))
-cursor.execute(pg.scoutRejoin(cursor, leaverspids[0], leavershids, date(2021, 5, 15)))
+    cursor.execute(pg.scoutLeave(cursor, id, date(2021, 4, 15)))
+cursor.execute(pg.scoutRejoin(cursor, leaverspids[0], leavershids, date(2021, 5, 15), tids[1], date(2021, 5, 15), sthids))
 
 # Commit
 conn.commit()

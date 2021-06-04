@@ -160,12 +160,20 @@ def leaderLeave(pid: int, end_date: date) -> str:
 
     return  "UPDATE leader_history SET end_date = '" + str(end_date) + "' WHERE end_date IS null AND person_id = " + str(pid) + ';'
 
-def scoutLeave(pid: int, end_date: date) -> str:
+def scoutLeave(cursor, pid: int, end_date: date) -> str:
     '''Generate the SQL command to update scout_history for an active scout.'''
 
-    return  "UPDATE scout_history SET end_date = '" + str(end_date) + "' WHERE end_date IS null AND person_id = " + str(pid) + ';'
+    retstr = "UPDATE scout_history SET end_date = '" + str(end_date) + "' WHERE end_date IS null AND person_id = " + str(pid) + ';'
+    
+    # leave team too
+    cursor.execute("SELECT team_id, scout_id FROM scout WHERE person_id = %s;" % str(pid))
+    scout = cursor.fetchone()
+    if scout[0] is not None:
+        retstr += scoutLeaveTeam(scout[1], end_date)
+    
+    return retstr
 
-def leaderRejoin(cursor, person_id: int, is_junior: bool, historyids: list, start_date: date) -> str:
+def leaderRejoin(cursor, pid: int, is_junior: bool, historyids: list, start_date: date) -> str:
     '''Generate the SQL command to update leader_history for an inactive leader.'''
 
     historystr = "INSERT INTO leader_history (leader_history_id, person_id, start_date, is_junior) VALUES "
@@ -176,11 +184,11 @@ def leaderRejoin(cursor, person_id: int, is_junior: bool, historyids: list, star
     hid = seq[0]
     historyids.append(hid)
 
-    historystr += "(" + str(hid) + "," + str(person_id) + ",'" + str(start_date) + "'," + str(is_junior) + ");"
+    historystr += "(" + str(hid) + "," + str(pid) + ",'" + str(start_date) + "'," + str(is_junior) + ");"
 
     return historystr
 
-def scoutRejoin(cursor, person_id: int, historyids: list, start_date: date) -> str:
+def scoutRejoin(cursor, pid: int, historyids: list, start_date: date, team_id: int = None, team_join_date: date = None, thistoryids: list = None) -> str:
     '''Generate the SQL command to update scout_history for an inactive scout.'''
 
     historystr = "INSERT INTO scout_history (scout_history_id, person_id, start_date) VALUES "
@@ -191,6 +199,34 @@ def scoutRejoin(cursor, person_id: int, historyids: list, start_date: date) -> s
     hid = seq[0]
     historyids.append(hid)
 
-    historystr += "(" + str(hid) + "," + str(person_id) + ",'" + str(start_date) + "');"
+    historystr += "(" + str(hid) + "," + str(pid) + ",'" + str(start_date) + "');"
 
+    # rejoin team too
+    cursor.execute("SELECT team_id, scout_id FROM scout WHERE person_id = %s;" % str(pid))
+    scout = cursor.fetchone()
+    if team_id is not None:
+        historystr += scoutRejoinTeam(cursor, scout[1], team_id, team_join_date, thistoryids)
+    
     return historystr
+
+def scoutLeaveTeam(sid: int, leave_date: date) -> str:
+    '''Generate the SQL command to update scout_team_history for an active scout.'''
+
+    retstr = "UPDATE scout_team_history SET leave_date = '" + str(leave_date) + "' WHERE leave_date IS null AND scout_id = " + str(sid) + ';'
+    retstr += "UPDATE scout SET team_id = null WHERE scout_id = %s;" % str(sid)
+    return retstr
+
+def scoutRejoinTeam(cursor, sid: int, tid: int, join_date: date, thistoryids: list) -> str:
+    '''Generate the SQL command to update scout_team_history for an active scout.'''
+
+    thistorystr = " INSERT INTO scout_team_history (scout_team_history_id, team_id, scout_id, join_date) VALUES "
+
+    # scout_team_history_id
+    cursor.execute("SELECT * FROM nextval('scout_team_history_scout_team_history_id_seq');")
+    seq = cursor.fetchone()
+    sthid = seq[0]
+    thistoryids.append(sthid)
+
+    thistorystr += "(" + str(sthid) + "," + str(tid) + "," + str(sid) + ",'" + str(join_date) + "');"
+
+    return thistorystr
