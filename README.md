@@ -11,18 +11,16 @@ Un backup se encuentra en el archivo dgtempty. Para restaurar el backup seleccio
 La funcion clearall() elimina todos los datos y reestablece las secuencias para facilitar pruebas.
 
 # Funcionamiento
-Para ejecutar el programa ejecutar el script datagen.py
+Para ejecutar el programa ejecutar el script datagen.py \
 ATENCION: El script elimina todos los datos existentes antes de cargar datos nuevos!
 
-persongen: generate crea una persona, leadergen y scoutgen generan filas a partir de una lista de person_ids. Para obtener un person/scout/leader_id valido se consulta e incrementa la secuencia asociada.
+persongen: generate crea una persona, leadergen y scoutgen generan filas a partir de una lista de person_ids. Para obtener un person/scout/leader_id valido se consulta e incrementa la secuencia asociada. Ademas agrega un registro a la tabla historica correspondiente. Para agregar end_date o agregar un registro nuevo se tienen las funciones leaderLeave/scoutLeave y leaderRejoin y scoutRejoin
 
 teamgen: funciones para crear y modificar un team.
 
 entitygen: cada clase crea filas en la tabla de su nombre, division adicionalmente crea filas en division_category. Funciona de forma similar a persongen.
 
 awardgen: generate crea awards con nombres aleatorios, y requirementgen genera requirements para un award usando un generador de oraciones. giveRequirement y genAward generan filas en person_requirement y person_award.
-
-Con respecto a tablas historicas: las tablas cuyos nombres terminan en _history deben ser actualizadas a la par que se generan datos en otras funciones, eso esta considerado para el futuro.
 
 # Dependencies
 command: "pip install pkgname"
