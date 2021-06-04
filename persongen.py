@@ -100,7 +100,7 @@ def leadergen(cursor, c: int, person_ids: list, is_junior: bool, ids: list, hist
 
     return retstr + historystr
 
-def scoutgen(cursor, c: int, person_ids: list, ids: list, historyids: list, start_date: date, team_id: int = None) -> str:
+def scoutgen(cursor, c: int, person_ids: list, ids: list, historyids: list, start_date: date, team_id: int = None, team_join_date: date = None, thistoryids: list = None) -> str:
     '''Generate the SQL command to make the person person_id a scout.'''
 
     # sql format is
@@ -109,6 +109,7 @@ def scoutgen(cursor, c: int, person_ids: list, ids: list, historyids: list, star
 
     retstr = "INSERT INTO scout (scout_id, person_id, team_id) VALUES "
     historystr = "INSERT INTO scout_history (scout_history_id, person_id, start_date) VALUES "
+    thistorystr = " INSERT INTO scout_team_history (scout_team_history_id, team_id, scout_id, join_date) VALUES "
 
     if team_id is None:
         team_id = 'null'
@@ -118,6 +119,8 @@ def scoutgen(cursor, c: int, person_ids: list, ids: list, historyids: list, star
         if i > 0:
             retstr += ", "
             historystr += ", "
+            if team_id != 'null':
+                thistorystr += ", "
         
         # scout_id
         cursor.execute("SELECT * FROM nextval('scout_scout_id_seq');")
@@ -131,12 +134,24 @@ def scoutgen(cursor, c: int, person_ids: list, ids: list, historyids: list, star
         hid = seq[0]
         historyids.append(hid)
 
+        # scout_team_history_id
+        if team_id != 'null':
+            cursor.execute("SELECT * FROM nextval('scout_team_history_scout_team_history_id_seq');")
+            seq = cursor.fetchone()
+            thid = seq[0]
+            thistoryids.append(thid)
+
         # add to SQL string
         retstr += "(" + str(id) + "," + str(person_ids[i]) + "," + str(team_id) + ")"
         historystr += "(" + str(hid) + "," + str(person_ids[i]) + ",'" + str(start_date) + "')"
+        if team_id != 'null':
+            thistorystr += "(" + str(thid) + "," + str(team_id) + ',' + str(id) + ",'" + str(team_join_date) + "')"
 
     retstr += "; "
     historystr += ";"
+    if team_id != 'null':
+        thistorystr += ";"
+        historystr += thistorystr
 
     return retstr + historystr
 

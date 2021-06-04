@@ -26,6 +26,7 @@ tlids = list()
 tlhids = list()
 
 sids = list()
+sthids = list()
 shids = list()
 tids = list()
 
@@ -85,9 +86,9 @@ cursor.execute(tg.generate(cursor, 1, dids[0], auxtlids, tids, 'F', date(2021, 6
 # scouts
 print("                   ...person->scout")
 cursor.execute(pg.generate(cursor, 10, date(2005, 1, 1), date(2008, 12, 31), spids1, 'M'))
-cursor.execute(pg.scoutgen(cursor, 10, spids1, sids, shids, date(2021, 3, 18), tids[0]))
+cursor.execute(pg.scoutgen(cursor, 10, spids1, sids, shids, date(2021, 3, 18), tids[0], date(2021, 3, 18), sthids))
 cursor.execute(pg.generate(cursor, 10, date(2005, 1, 1), date(2008, 12, 31), spids2, 'F'))
-cursor.execute(pg.scoutgen(cursor, 10, spids2, sids, shids, date(2021, 3, 18), tids[1]))
+cursor.execute(pg.scoutgen(cursor, 10, spids2, sids, shids, date(2021, 3, 18), tids[1], date(2021, 3, 18), sthids))
 
 # awards
 print("                   ...award")
