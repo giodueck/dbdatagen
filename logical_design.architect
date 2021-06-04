@@ -423,7 +423,7 @@
   <table id="TAB114" populated="true" UUID="75379645-768a-41e1-9db2-3132116cd47f" name="leader_team_history" objectType="TABLE" physicalName="leader_team_history" >
    <remarks></remarks>
    <folder id="FOLTAB1141" populated="true" name="Columns" physicalName="Columns" type="1">
-    <column id="COL115" populated="true" UUID="4b743948-3e46-4ab8-ada7-5d728a10ddc1" autoIncrement="false" autoIncrementSequenceName="leader_team_history_leader_team_history_id_seq" defaultValue="" name="leader_team_history_id" nullable="0" physicalName="leader_team_history_id" precision="0" primaryKeySeq="0" referenceCount="1" scale="0" sourceDataTypeName="UserDefinedSQLType" type="4" userDefinedTypeUUID="63b011c7-c81f-4c75-8271-632b3c87f727" >
+    <column id="COL115" populated="true" UUID="4b743948-3e46-4ab8-ada7-5d728a10ddc1" autoIncrement="true" autoIncrementSequenceName="leader_team_history_leader_team_history_id_seq" defaultValue="" name="leader_team_history_id" nullable="0" physicalName="leader_team_history_id" precision="0" primaryKeySeq="0" referenceCount="1" scale="0" sourceDataTypeName="UserDefinedSQLType" type="4" userDefinedTypeUUID="63b011c7-c81f-4c75-8271-632b3c87f727" >
      <remarks></remarks>
     </column>
     <column id="COL116" populated="true" UUID="4963f450-0037-4c15-98dc-c3a85a5f9694" autoIncrement="false" autoIncrementSequenceName="leader_leader_id_seq_1_1_3" defaultValue="" name="leader_id" nullable="0" physicalName="leader_id" precision="0" referenceCount="1" scale="0" sourceDataTypeName="UserDefinedSQLType" type="4" userDefinedTypeUUID="63b011c7-c81f-4c75-8271-632b3c87f727" >
@@ -545,7 +545,7 @@
    </relationship>
   </relationships>
  </target-database>
- <ddl-generator type="ca.sqlpower.architect.ddl.PostgresDDLGenerator" allow-connection="true" target-schema="public"> </ddl-generator>
+ <ddl-generator type="ca.sqlpower.architect.ddl.PostgresDDLGenerator" allow-connection="false" target-schema="public"> </ddl-generator>
  <liquibase-settings useSeparateChangeSets="false" generateId="false" idStart="1"/>
  <create-kettle-job-settings filePath="" jobName="" schemaName="" kettleJoinType="0" savingToFile="true" />
  <play-pen zoom="0.9999999999999999" viewportX="0" viewportY="108" relationship-style="rectilinear" names-displayLogicalNames="false" showPrimaryTag="true" showForeignTag="true" showAlternateTag="true" columnVisibility="ALL" relationshipLabelVisibility="true">
