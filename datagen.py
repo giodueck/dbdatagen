@@ -123,6 +123,26 @@ for i in range(len(spids1)):
     cursor.execute(ag.giveAwards(spids1[i], redaids, tlids[0], date(2020,1,1), date(2020,12,31)))
     cursor.execute(ag.giveAwards(spids2[i], redaids, tlids[1], date(2020,1,1), date(2020,12,31)))
 
+# leavers
+leaverlpids = list()
+leaverlids = list()
+leaverlhids = list()
+leaverspids = list()
+leaversids = list()
+leavershids = list()
+print("                   ...person->leader->leave")
+cursor.execute(pg.generate(cursor, 2, date(1990, 1, 1), date(2000, 12, 31), leaverlpids))
+cursor.execute(pg.leadergen(cursor, 2, leaverlpids, True, leaverlids, leaverlhids, date(2021, 3, 14)))
+for id in leaverlpids:
+    cursor.execute(pg.leaderLeave(id, date(2021, 4, 15)))
+cursor.execute(pg.leaderRejoin(cursor, leaverlpids[0], False, leaverlhids, date(2021, 5, 15)))
+print("                   ...person->scout->leave")
+cursor.execute(pg.generate(cursor, 2, date(2005, 1, 1), date(2008, 12, 31), leaverspids, 'F'))
+cursor.execute(pg.scoutgen(cursor, 2, leaverspids, leaversids, leavershids, date(2021, 3, 18)))
+for id in leaverspids:
+    cursor.execute(pg.scoutLeave(id, date(2021, 4, 15)))
+cursor.execute(pg.scoutRejoin(cursor, leaverspids[0], leavershids, date(2021, 5, 15)))
+
 # Commit
 conn.commit()
 

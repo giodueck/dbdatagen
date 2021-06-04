@@ -139,3 +139,43 @@ def scoutgen(cursor, c: int, person_ids: list, ids: list, historyids: list, star
     historystr += ";"
 
     return retstr + historystr
+
+def leaderLeave(pid: int, end_date: date) -> str:
+    '''Generate the SQL command to update leader_history for an active leader.'''
+
+    return  "UPDATE leader_history SET end_date = '" + str(end_date) + "' WHERE end_date IS null AND person_id = " + str(pid) + ';'
+
+def scoutLeave(pid: int, end_date: date) -> str:
+    '''Generate the SQL command to update scout_history for an active scout.'''
+
+    return  "UPDATE scout_history SET end_date = '" + str(end_date) + "' WHERE end_date IS null AND person_id = " + str(pid) + ';'
+
+def leaderRejoin(cursor, person_id: int, is_junior: bool, historyids: list, start_date: date) -> str:
+    '''Generate the SQL command to update leader_history for an inactive leader.'''
+
+    historystr = "INSERT INTO leader_history (leader_history_id, person_id, start_date, is_junior) VALUES "
+
+    # leader_history_id
+    cursor.execute("SELECT * FROM nextval('leader_history_leader_history_id_seq');")
+    seq = cursor.fetchone()
+    hid = seq[0]
+    historyids.append(hid)
+
+    historystr += "(" + str(hid) + "," + str(person_id) + ",'" + str(start_date) + "'," + str(is_junior) + ");"
+
+    return historystr
+
+def scoutRejoin(cursor, person_id: int, historyids: list, start_date: date) -> str:
+    '''Generate the SQL command to update scout_history for an inactive scout.'''
+
+    historystr = "INSERT INTO scout_history (scout_history_id, person_id, start_date) VALUES "
+
+    # scout_history_id
+    cursor.execute("SELECT * FROM nextval('scout_history_scout_history_id_seq');")
+    seq = cursor.fetchone()
+    hid = seq[0]
+    historyids.append(hid)
+
+    historystr += "(" + str(hid) + "," + str(person_id) + ",'" + str(start_date) + "');"
+
+    return historystr
