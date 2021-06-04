@@ -29,6 +29,7 @@ sids = list()
 sthids = list()
 shids = list()
 tids = list()
+lthids = list()
 
 oids = list()
 opids = list()
@@ -79,9 +80,9 @@ cursor.execute(pg.leadergen(cursor, 2, tlpids, False, tlids, tlhids, date(2021, 
 
     # teams
 print("                   ...team")
-cursor.execute(tg.generate(cursor, 1, dids[0], tlids, tids, 'M', date(2021, 6, 1)))
+cursor.execute(tg.generate(cursor, 1, dids[0], tlids, tids, 'M', date(2021, 6, 1), lthids))
 auxtlids = [tlids[1]]
-cursor.execute(tg.generate(cursor, 1, dids[0], auxtlids, tids, 'F', date(2021, 6, 1)))
+cursor.execute(tg.generate(cursor, 1, dids[0], auxtlids, tids, 'F', date(2021, 6, 1), lthids))
 
 # scouts
 print("                   ...person->scout")
@@ -132,7 +133,7 @@ leaverspids = list()
 leaversids = list()
 leavershids = list()
 print("                   ...person->leader->leave")
-cursor.execute(pg.generate(cursor, 2, date(1990, 1, 1), date(2000, 12, 31), leaverlpids))
+cursor.execute(pg.generate(cursor, 2, date(1990, 1, 1), date(2000, 12, 31), leaverlpids, 'M'))
 cursor.execute(pg.leadergen(cursor, 2, leaverlpids, True, leaverlids, leaverlhids, date(2021, 3, 14)))
 for id in leaverlpids:
     cursor.execute(pg.leaderLeave(id, date(2021, 4, 15)))
@@ -143,6 +144,14 @@ cursor.execute(pg.scoutgen(cursor, 2, leaverspids, leaversids, leavershids, date
 for id in leaverspids:
     cursor.execute(pg.scoutLeave(cursor, id, date(2021, 4, 15)))
 cursor.execute(pg.scoutRejoin(cursor, leaverspids[0], leavershids, date(2021, 5, 15), tids[1], date(2021, 5, 15), sthids))
+
+# switch team leader for team 1
+print("                   ...replace team leader")
+cursor.execute(tg.replaceTeamLeader(cursor, tids[0], leaverlids[0], False, date(2021, 4, 15), lthids))
+
+# add junior leader to team 1
+print("                   ...add junior team leader")
+cursor.execute(tg.replaceTeamLeader(cursor, tids[0], tlids[0], True, date(2021, 4, 15), lthids))
 
 # Commit
 conn.commit()

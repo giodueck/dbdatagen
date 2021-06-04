@@ -205,7 +205,7 @@ def scoutRejoin(cursor, pid: int, historyids: list, start_date: date, team_id: i
     cursor.execute("SELECT team_id, scout_id FROM scout WHERE person_id = %s;" % str(pid))
     scout = cursor.fetchone()
     if team_id is not None:
-        historystr += scoutRejoinTeam(cursor, scout[1], team_id, team_join_date, thistoryids)
+        historystr += scoutJoinTeam(cursor, scout[1], team_id, team_join_date, thistoryids)
     
     return historystr
 
@@ -216,7 +216,7 @@ def scoutLeaveTeam(sid: int, leave_date: date) -> str:
     retstr += "UPDATE scout SET team_id = null WHERE scout_id = %s;" % str(sid)
     return retstr
 
-def scoutRejoinTeam(cursor, sid: int, tid: int, join_date: date, thistoryids: list) -> str:
+def scoutJoinTeam(cursor, sid: int, tid: int, join_date: date, thistoryids: list) -> str:
     '''Generate the SQL command to update scout_team_history for an active scout.'''
 
     thistorystr = " INSERT INTO scout_team_history (scout_team_history_id, team_id, scout_id, join_date) VALUES "
@@ -228,5 +228,20 @@ def scoutRejoinTeam(cursor, sid: int, tid: int, join_date: date, thistoryids: li
     thistoryids.append(sthid)
 
     thistorystr += "(" + str(sthid) + "," + str(tid) + "," + str(sid) + ",'" + str(join_date) + "');"
+
+    return thistorystr
+
+def leaderJoinTeam(cursor, lid: int, tid: int, is_junior: bool, join_date: date, thistoryids: list) -> str:
+    '''Generate the SQL command to update leader_team_history for an active leader.'''
+
+    thistorystr = " INSERT INTO leader_team_history (leader_team_history_id, team_id, leader_id, is_junior, join_date) VALUES "
+
+    # leader_team_history_id
+    cursor.execute("SELECT * FROM nextval('leader_team_history_leader_team_history_id_seq');")
+    seq = cursor.fetchone()
+    lthid = seq[0]
+    thistoryids.append(lthid)
+
+    thistorystr += "(" + str(lthid) + "," + str(tid) + "," + str(lid) + "," + str(is_junior) + ",'" + str(join_date) + "');"
 
     return thistorystr
