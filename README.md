@@ -13,7 +13,10 @@ La funcion clearall() elimina todos los datos y reestablece las secuencias para 
 
 # Funcionamiento
 Para ejecutar el programa ejecutar el script datagen.py \
-ATENCION: El script elimina todos los datos existentes antes de cargar datos nuevos!
+Se crean de forma iterativa cada entidad con sus componentes, primero una office, luego sus outposts, luego las divisionees de cada outpost y los teams de cada division. Para cada entidad se generan los leaders justo antes. Los scouts se generan para cada team una vez exista. Para terminar la generacion de cada office se generan leaders superfluos para llegar a los 500K registros.\
+Cada persona se genera con uno o varios awards, y la mayoria de los leaders y scouts salen y reentran en el programa.
+
+ATENCION: El script elimina todos los datos existentes antes de cargar datos nuevos, puede tomar bastante tiempo.
 
 persongen: generate crea una persona, leadergen y scoutgen generan filas a partir de una lista de person_ids. Para obtener un person/scout/leader_id valido se consulta e incrementa la secuencia asociada. Ademas agrega un registro a la tabla historica correspondiente; para agregar end_date o agregar un registro nuevo se tienen las funciones leaderLeave/scoutLeave y leaderRejoin/scoutRejoin
 
