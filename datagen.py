@@ -4,9 +4,11 @@ import psycopg2
 # https://www.psycopg.org/docs/usage.html
 import persongen as pg
 import entitygen as eg
-from datetime import date
-import teamgen as tg
 import awardgen as ag
+import teamgen as tg
+
+from datetime import date
+import sys
 
 def openConn():
     '''Opens a connection to the db. Returns (conn, cursor) tuple.'''
@@ -29,144 +31,224 @@ def closeConn(conn, cursor):
 
 conn, cursor = openConn()
 
+def award(cursor, person_id: int, leader_id: int, i: int, category: int = None):
+    '''Gives the person 1 or 2 awards depending on i'''
+
+    # define award-list
+    if category is not None:
+        auxAwards = awards[category]
+        auxReqs = requirements[category]
+    else:
+        auxAwards = awards[3]
+        auxReqs = requirements[3]
+
+    if i % 2 == 0:
+        auxAwards = [auxAwards[0], auxAwards[1]]
+        cursor.execute(ag.giveRequirements(person_id, auxReqs[0], leader_id, startDate, today))
+        cursor.execute(ag.giveRequirements(person_id, auxReqs[1], leader_id, startDate, today))
+    else:
+        auxAwards = [auxAwards[0]]
+        cursor.execute(ag.giveRequirements(person_id, auxReqs[0], leader_id, startDate, today))
+
+
+    cursor.execute(ag.giveAwards(person_id, auxAwards, leader_id, startDate, today))
+
+# Numbers
+nOffices = 40
+nOutposts = 50  # * nOffices
+nDivisions = 3  # * nOutposts * nOffices
+nTeams = 10     # * nDivisions * nOutposts * nOffices
+nScouts = 5     # * nTeams * nDivisions * nOutposts * nOffices
+# Totals:
+# Scouts = 40 * 50 * 3 * 10 * 5 = 300K
+# Leaders = (40 + 40*50 + 40*50*3 + 40*50*3*10) *2 = 136 080
+#       163 920 extra leaders will be generated to fill the 300K
+
+nAwards = 2
+nReqs = 2
+
 # Lists to store created ids
-lpids = list()
-tlpids = list()
-spids1 = list()
-spids2 = list()
+offices = list()
+outposts = list()
+divisions = list()
 
-lids = list()
-lhids = list()
-tlids = list()
-tlhids = list()
+categories = list()
 
-sids = list()
-sthids = list()
-shids = list()
-tids = list()
-lthids = list()
+awards = list()
+requirements = list()
 
-oids = list()
-opids = list()
-dcids = list()
-dids = list()
+auxPersons = list()
+auxLeaders = list()
+auxViceLeaders = list()
+auxScouts = list()
+auxTeams = list()
 
-aids = list()
-rids = list()
+# Useful variables
+leaderMinBirthday = date(1970, 1, 1)
+leaderMaxBirthday = date(2003, 12, 31)
+
+discoveryMinBirthday = date(2010, 1, 1)
+discoveryMaxBirthday = date(2012, 12, 31)
+
+adventureMinBirthday = date(2007, 1, 1)
+adventureMaxBirthday = date(2009, 12, 31)
+
+expeditionMinBirthday = date(2004, 1, 1)
+expeditionMaxBirthday = date(2006, 12, 31)
+
+scoutMinBirthdays = [discoveryMinBirthday, adventureMinBirthday, expeditionMinBirthday]
+scoutMaxBirthdays = [discoveryMaxBirthday, adventureMaxBirthday, expeditionMaxBirthday]
+
+startDate = date(2019, 1, 1)
+today = date(2021, 1, 1)
 
 # clear existing data
 print("Clearing data...")
 cursor.execute("SELECT * FROM clearall();")
+print("Generating data...")
 
-print("Generating rows for...")
+# setup toolbar
+sys.stdout.write("Progress:")
+sys.stdout.write("  0.00%")
+sys.stdout.flush()
+sys.stdout.write("\b" * (6)) # return to start of line
 
-# leaders
-print("                   ...person->leader")
-cursor.execute(pg.generate(cursor, 10, date(1990, 1, 1), date(2000, 12, 31), lpids))
-cursor.execute(pg.leadergen(cursor, 10, lpids, False, lids, lhids, date(2021, 3, 14)))
+# division_category has only 3 rows
+cursor.execute(eg.division.categorygen(cursor, 3, ["Discovery", "Adventure", "Expedition"], categories))
 
-# offices
-print("                   ...office")
-ol = list(); ol.append(lids.pop(0))
-ovl = list(); ovl.append(lids.pop(0))
-cursor.execute(eg.office.generate(cursor, 1, ol, ovl, oids))
-
-# ouposts
-print("                   ...outpost")
-opl = list(); opl.append(lids.pop(0)); opl.append(lids.pop(0))
-opvl = list(); opvl.append(lids.pop(0)); opvl.append(lids.pop(0))
-cursor.execute(eg.outpost.generate(cursor, 2, oids[0], opl, opvl, opids))
-
-# divisions
-print("                   ...division_category")
-cursor.execute(eg.division.categorygen(cursor, 1, ["Default"], dcids))
-
-print("                   ...division")
-dl = list(); dl.append(lids.pop(0)); dl.append(lids.pop(0))
-dvl = list(); dvl.append(lids.pop(0)); dvl.append(lids.pop(0))
-cursor.execute(eg.division.generate(cursor, 2, dcids[0], opids, dl, dvl, dids))
-
-# teams
-    # leaders
-print("                   ...person->leader->team")
-cursor.execute(pg.generate(cursor, 1, date(1990, 1, 1), date(2000, 12, 31), tlpids, 'M'))
-cursor.execute(pg.generate(cursor, 1, date(1990, 1, 1), date(2000, 12, 31), tlpids, 'F'))
-cursor.execute(pg.leadergen(cursor, 2, tlpids, False, tlids, tlhids, date(2021, 3, 14)))
-
-    # teams
-print("                   ...team")
-cursor.execute(tg.generate(cursor, 1, dids[0], tlids, tids, 'M', date(2021, 6, 1), lthids))
-auxtlids = [tlids[1]]
-cursor.execute(tg.generate(cursor, 1, dids[0], auxtlids, tids, 'F', date(2021, 6, 1), lthids))
-
-# scouts
-print("                   ...person->scout")
-cursor.execute(pg.generate(cursor, 10, date(2005, 1, 1), date(2008, 12, 31), spids1, 'M'))
-cursor.execute(pg.scoutgen(cursor, 10, spids1, sids, shids, date(2021, 3, 18), tids[0], date(2021, 3, 18), sthids))
-cursor.execute(pg.generate(cursor, 10, date(2005, 1, 1), date(2008, 12, 31), spids2, 'F'))
-cursor.execute(pg.scoutgen(cursor, 10, spids2, sids, shids, date(2021, 3, 18), tids[1], date(2021, 3, 18), sthids))
-
-# awards
-print("                   ...award")
-cursor.execute(ag.generate(cursor, 3, aids, dcids[0]))
-
-# requirements
-print("                   ...requirement")
-for i in range(len(aids)):
-    rids.append(list())
-    cursor.execute(ag.requirementgen(cursor, 3, rids[i], aids[i]))
-
-# assign met requirements
-print("                   ...person_requirement")
-for i in range(len(spids1)):
-    for j in range(len(aids)):
-        redrids = [rids[j][0]]
-        if i % 2 == 0:
-            redrids.append(rids[j][1])
-            if i % 4 == 0:
-                redrids.append(rids[j][2])
-
-        cursor.execute(ag.giveRequirements(spids1[i], redrids, tlids[0], date(2020,1,1), date(2020,12,31)))
-        cursor.execute(ag.giveRequirements(spids2[i], redrids, tlids[1], date(2020,1,1), date(2020,12,31)))
-
-# assign awards
-print("                   ...person_award")
-for i in range(len(spids1)):
-    redaids = [aids[0]]
-    if i % 2 == 0:
-        redaids.append(aids[1])
-        if i % 4 == 0:
-            redaids.append(aids[2])
-    cursor.execute(ag.giveAwards(spids1[i], redaids, tlids[0], date(2020,1,1), date(2020,12,31)))
-    cursor.execute(ag.giveAwards(spids2[i], redaids, tlids[1], date(2020,1,1), date(2020,12,31)))
-
-# leavers
-leaverlpids = list()
-leaverlids = list()
-leaverlhids = list()
-leaverspids = list()
-leaversids = list()
-leavershids = list()
-print("                   ...person->leader->leave")
-cursor.execute(pg.generate(cursor, 2, date(1990, 1, 1), date(2000, 12, 31), leaverlpids, 'M'))
-cursor.execute(pg.leadergen(cursor, 2, leaverlpids, True, leaverlids, leaverlhids, date(2021, 3, 14)))
-for id in leaverlpids:
-    cursor.execute(pg.leaderLeave(id, date(2021, 4, 15)))
-cursor.execute(pg.leaderRejoin(cursor, leaverlpids[0], False, leaverlhids, date(2021, 5, 15)))
-print("                   ...person->scout->leave")
-cursor.execute(pg.generate(cursor, 2, date(2005, 1, 1), date(2008, 12, 31), leaverspids, 'F'))
-cursor.execute(pg.scoutgen(cursor, 2, leaverspids, leaversids, leavershids, date(2021, 3, 18), tids[1], date(2021, 3, 18), sthids))
-for id in leaverspids:
-    cursor.execute(pg.scoutLeave(cursor, id, date(2021, 4, 15)))
-cursor.execute(pg.scoutRejoin(cursor, leaverspids[0], leavershids, date(2021, 5, 15), tids[1], date(2021, 5, 15), sthids))
-
-# switch team leader for team 1
-print("                   ...replace team leader")
-cursor.execute(tg.replaceTeamLeader(cursor, tids[0], leaverlids[0], False, date(2021, 4, 15), lthids))
-
-# add junior leader to team 1
-print("                   ...add junior team leader")
-cursor.execute(tg.replaceTeamLeader(cursor, tids[0], tlids[0], True, date(2021, 4, 15), lthids))
-
-# Close communication with the db
 closeConn(conn, cursor)
+
+# Awards & requirements
+for i in range(4):
+    conn, cursor = openConn()
+
+    # Awards
+    awards.append(list())
+    try:
+        cursor.execute(ag.generate(cursor, nAwards, awards[i], categories[i]))
+    except:
+        # leader awards will cause an exception because of categories
+        cursor.execute(ag.generate(cursor, nAwards, awards[i], None))
+
+    # Requirements
+    requirements.append(list())
+    for j in range(len(awards[i])):
+        requirements[i].append(list())
+        cursor.execute(ag.requirementgen(cursor, nReqs, requirements[i][j], awards[i][j]))
+
+    closeConn(conn, cursor)
+
+# Offices
+for i in range(nOffices):
+
+    # TESTING
+    # if i == 1:
+    #     break
+
+    conn, cursor = openConn()
+
+    auxPersons.clear()
+    auxLeaders.clear()
+    auxViceLeaders.clear()
+    # gen leaders
+    cursor.execute(pg.generate(cursor, 2, leaderMinBirthday, leaderMaxBirthday, auxPersons))
+    cursor.execute(pg.leadergen(cursor, 2, auxPersons, False, auxLeaders, startDate))
+    for p in auxPersons:
+        award(cursor, p, 1, p)
+        if p % 2 == 0:
+            cursor.execute(pg.leaderPause(cursor, p, startDate, today, False))
+    auxViceLeaders.append(auxLeaders[1])
+    # gen office
+    cursor.execute(eg.office.generate(cursor, 1, auxLeaders, auxViceLeaders, offices))
+
+    # Outposts
+    for j in range(nOutposts):
+
+        # update the bar
+        s = "{percentage:.2f}".format(percentage = i * 2.5 + j * 0.05)
+        if i * 2.5 + j * 0.05 < 10:
+            s = " " + s
+        sys.stdout.write("{}%".format(s))
+        sys.stdout.flush()
+        sys.stdout.write("\b" * (6)) # return to start of line
+
+        auxPersons.clear()
+        auxLeaders.clear()
+        auxViceLeaders.clear()
+        # gen leaders
+        cursor.execute(pg.generate(cursor, 2, leaderMinBirthday, leaderMaxBirthday, auxPersons))
+        cursor.execute(pg.leadergen(cursor, 2, auxPersons, False, auxLeaders, startDate))
+        for p in auxPersons:
+            award(cursor, p, 1, p)
+            if p % 2 == 0:
+                cursor.execute(pg.leaderPause(cursor, p, startDate, today, False))
+        auxViceLeaders.append(auxLeaders[1])
+        # gen outpost
+        cursor.execute(eg.outpost.generate(cursor, 1, offices[i], auxLeaders, auxViceLeaders, outposts))
+
+        # Divisions
+        for k in range(nDivisions):
+            auxPersons.clear()
+            auxLeaders.clear()
+            auxViceLeaders.clear()
+            # gen leaders
+            cursor.execute(pg.generate(cursor, 2, leaderMinBirthday, leaderMaxBirthday, auxPersons))
+            cursor.execute(pg.leadergen(cursor, 2, auxPersons, False, auxLeaders, startDate))
+            for p in auxPersons:
+                award(cursor, p, 1, p)
+                if p % 2 == 0:
+                    cursor.execute(pg.leaderPause(cursor, p, startDate, today, False))
+            auxViceLeaders.append(auxLeaders[1])
+            # gen division
+            cursor.execute(eg.division.generate(cursor, 1, categories[k], outposts[j], auxLeaders, auxViceLeaders, divisions))
+
+            # Teams
+            for l in range(nTeams):
+                auxPersons.clear()
+                auxLeaders.clear()
+                auxTeams.clear()
+                auxViceLeaders.clear()
+                # gen leaders
+                cursor.execute(pg.generate(cursor, 2, leaderMinBirthday, leaderMaxBirthday, auxPersons))
+                cursor.execute(pg.leadergen(cursor, 2, auxPersons, False, auxLeaders, startDate))
+                for p in auxPersons:
+                    award(cursor, p, 1, p)
+                    if p % 2 == 0:
+                        cursor.execute(pg.leaderPause(cursor, p, startDate, today, False))
+                auxViceLeaders.append(auxLeaders[1])
+                # gen team
+                if l % 2 == 0:
+                    gender = 'M'
+                else:
+                    gender = 'F'
+                cursor.execute(tg.generate(cursor, 1, divisions[k], auxLeaders, auxViceLeaders, auxTeams, gender, startDate))
+                cursor.execute(tg.generate(cursor, 1, divisions[k], auxLeaders, auxViceLeaders, auxTeams, gender, startDate))
+
+                # Scouts
+                auxPersons.clear()
+                # gen scouts
+                cursor.execute(pg.generate(cursor, nScouts, scoutMinBirthdays[k], scoutMaxBirthdays[k], auxPersons, gender))
+                cursor.execute(pg.scoutgen(cursor, nScouts, auxPersons, auxScouts, startDate, auxTeams[0], startDate))
+                for p in auxPersons:
+                    award(cursor, p, auxLeaders[0], p, categories[k])
+                for n in range(4):
+                    cursor.execute(pg.scoutPause(cursor, auxPersons[n], startDate, today, auxTeams[1]))
+
+    # Generate superfluous leaders for this office
+    auxPersons.clear()
+    auxLeaders.clear()
+    for s in range(4098):
+        cursor.execute(pg.generate(cursor, 1, leaderMinBirthday, leaderMaxBirthday, auxPersons))
+        cursor.execute(pg.leadergen(cursor, 1, auxPersons, True, auxLeaders, startDate))
+        award(cursor, auxPersons[s], 1, s)
+        if s < 3484:
+            cursor.execute(pg.leaderPause(cursor, auxPersons[s], startDate, today, False))
+        if s < 4000:
+            cursor.execute(tg.update(cursor, auxTeams[0], leader_id=auxLeaders[s], _date=today))
+        if s < 2500:
+            cursor.execute(tg.update(cursor, auxTeams[1], junior_leader_id=auxLeaders[s], _date=today))
+
+    # commit for this office
+    closeConn(conn, cursor)
+
+sys.stdout.write("\b done!  \n") # this ends the progress bar
