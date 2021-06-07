@@ -6,6 +6,7 @@ Adrian Ramirez
 !NO! Compatible con el diseño del Challenge 5 \
 Usar el .architect en el repositorio
 - award: columna division_category relaciona a cada award con una categoria de scouts. Para los awards de lideres se deja en null.
+- leader_team_history: PK no estaba relacionada con una secuencia, se arregla en la version mas nueva.
 
 Un backup se encuentra en el archivo dgtempty. Para restaurar el backup seleccionar formato Tar. \
 La funcion clearall() elimina todos los datos y reestablece las secuencias para facilitar pruebas.
