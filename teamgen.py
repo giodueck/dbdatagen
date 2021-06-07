@@ -5,6 +5,9 @@ import namegenerator
 def generate(cursor, c: int, division_id: int, leader_ids: list, junior_leader_ids: list, ids: list, gender: str, start_date: date) -> str:
     '''Generate the SQL command to insert a new team. Use update to insert junior or end_date'''
 
+    execute = cursor.execute
+    fetchone = cursor.fetchone
+
     retstr = "INSERT INTO team (team_id, division_id, leader_id, junior_leader_id, name, gender, start_date) VALUES "
     lthstr = ""
 
@@ -14,8 +17,8 @@ def generate(cursor, c: int, division_id: int, leader_ids: list, junior_leader_i
             retstr += ", "
 
         # team_id
-        cursor.execute("SELECT * FROM nextval('team_team_id_seq');")
-        seq = cursor.fetchone()
+        execute("SELECT * FROM nextval('team_team_id_seq');")
+        seq = fetchone()
         id = seq[0]
         ids.append(id)
 
@@ -78,13 +81,16 @@ def update(cursor, team_id: int, division_id: int = None, leader_id: int = None,
 def replaceTeamLeader(cursor, tid: int, lid: int, is_junior: bool, replace_date: date) -> str:
     '''Generate the SQL command to update leader_team_history for an active leader.'''
 
+    execute = cursor.execute
+    fetchone = cursor.fetchone
+
     # get old leader
     if not is_junior:
-        cursor.execute("SELECT leader_id FROM team WHERE team_id = %s;" % str(tid))
-        oldlid = cursor.fetchone()[0]
+        execute("SELECT leader_id FROM team WHERE team_id = %s;" % str(tid))
+        oldlid = fetchone()[0]
     else:
-        cursor.execute("SELECT junior_leader_id FROM team WHERE team_id = %s;" % str(tid))
-        oldlid = cursor.fetchone()[0]
+        execute("SELECT junior_leader_id FROM team WHERE team_id = %s;" % str(tid))
+        oldlid = fetchone()[0]
     
     retstr = ""
     # old leader leaves

@@ -10,6 +10,9 @@ def generate(cursor, c: int, ids: list, division_category_id: int = None, parent
         parent_award: award_id of the award to be the parent of the first generated award.'''
     # gen = DocumentGenerator()
 
+    execute = cursor.execute
+    fetchone = cursor.fetchone
+
     retstr = "INSERT INTO award (award_id, name, division_category_id, parent_award_id) VALUES "
 
     if division_category_id is None:
@@ -21,8 +24,8 @@ def generate(cursor, c: int, ids: list, division_category_id: int = None, parent
             retstr += ", "
 
         # award_id
-        cursor.execute("SELECT * FROM nextval('award_award_id_seq');")
-        seq = cursor.fetchone()
+        execute("SELECT * FROM nextval('award_award_id_seq');")
+        seq = fetchone()
         id = seq[0]
         ids.append(id)
         
@@ -47,6 +50,9 @@ def generate(cursor, c: int, ids: list, division_category_id: int = None, parent
 def requirementgen(cursor, c: int, ids: list, award_id: int) -> str:
     '''Generate the SQL command to insert c new requirements for the award award_id.'''
 
+    execute = cursor.execute
+    fetchone = cursor.fetchone
+
     retstr = "INSERT INTO requirement (requirement_id, award_id, description) VALUES "
 
     for i in range(c):
@@ -55,8 +61,8 @@ def requirementgen(cursor, c: int, ids: list, award_id: int) -> str:
             retstr += ", "
 
         # requirement_id
-        cursor.execute("SELECT * FROM nextval('requirement_requirement_id_seq');")
-        seq = cursor.fetchone()
+        execute("SELECT * FROM nextval('requirement_requirement_id_seq');")
+        seq = fetchone()
         id = seq[0]
         ids.append(id)
         

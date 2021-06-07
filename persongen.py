@@ -19,6 +19,9 @@ def generate(cursor, c: int, minBirthday: date, maxBirthday: date, ids: list, ge
     #             .
     #             (idc-1, fnc-1, lnc-1, dc-1, gc-1);"
 
+    execute = cursor.execute
+    fetchone = cursor.fetchone
+
     retstr = "INSERT INTO person (person_id, first_name, last_name, date_of_birth, gender) VALUES "
     
     og = gender
@@ -29,8 +32,8 @@ def generate(cursor, c: int, minBirthday: date, maxBirthday: date, ids: list, ge
             retstr += ", "
 
         # person_id
-        cursor.execute("SELECT * FROM nextval('person_person_id_seq');")
-        seq = cursor.fetchone()
+        execute("SELECT * FROM nextval('person_person_id_seq');")
+        seq = fetchone()
         id = seq[0]
         ids.append(id)
 
@@ -71,6 +74,9 @@ def leadergen(cursor, c: int, person_ids: list, is_junior: bool, ids: list, star
     # "INSERT INTO leader (leader_id, person_id, is_junior)
     #      VALUES (int, bool);"
 
+    execute = cursor.execute
+    fetchone = cursor.fetchone
+
     retstr = "INSERT INTO leader (leader_id, person_id, is_junior) VALUES "
     historystr = "INSERT INTO leader_history (leader_history_id, person_id, start_date, is_junior) VALUES "
 
@@ -81,14 +87,14 @@ def leadergen(cursor, c: int, person_ids: list, is_junior: bool, ids: list, star
             historystr += ", "
         
         # leader_id
-        cursor.execute("SELECT * FROM nextval('leader_leader_id_seq_1_1');")
-        seq = cursor.fetchone()
+        execute("SELECT * FROM nextval('leader_leader_id_seq_1_1');")
+        seq = fetchone()
         id = seq[0]
         ids.append(id)
 
         # leader_history_id
-        cursor.execute("SELECT * FROM nextval('leader_history_leader_history_id_seq');")
-        seq = cursor.fetchone()
+        execute("SELECT * FROM nextval('leader_history_leader_history_id_seq');")
+        seq = fetchone()
         hid = seq[0]
 
         # add to SQL strings
@@ -107,6 +113,9 @@ def scoutgen(cursor, c: int, person_ids: list, ids: list, start_date: date, team
     # "INSERT INTO scout (scout_id, person_id, team_id)
     #      VALUES (int, int);"
 
+    execute = cursor.execute
+    fetchone = cursor.fetchone
+
     retstr = "INSERT INTO scout (scout_id, person_id, team_id) VALUES "
     historystr = "INSERT INTO scout_history (scout_history_id, person_id, start_date) VALUES "
     thistorystr = " INSERT INTO scout_team_history (scout_team_history_id, team_id, scout_id, join_date) VALUES "
@@ -123,20 +132,20 @@ def scoutgen(cursor, c: int, person_ids: list, ids: list, start_date: date, team
                 thistorystr += ", "
         
         # scout_id
-        cursor.execute("SELECT * FROM nextval('scout_scout_id_seq');")
-        seq = cursor.fetchone()
+        execute("SELECT * FROM nextval('scout_scout_id_seq');")
+        seq = fetchone()
         id = seq[0]
         ids.append(id)
 
         # scout_history_id
-        cursor.execute("SELECT * FROM nextval('scout_history_scout_history_id_seq');")
-        seq = cursor.fetchone()
+        execute("SELECT * FROM nextval('scout_history_scout_history_id_seq');")
+        seq = fetchone()
         hid = seq[0]
 
         # scout_team_history_id
         if team_id != 'null':
-            cursor.execute("SELECT * FROM nextval('scout_team_history_scout_team_history_id_seq');")
-            seq = cursor.fetchone()
+            execute("SELECT * FROM nextval('scout_team_history_scout_team_history_id_seq');")
+            seq = fetchone()
             thid = seq[0]
 
         # add to SQL string
@@ -161,10 +170,13 @@ def leaderLeave(pid: int, end_date: date) -> str:
 def scoutLeave(cursor, pid: int, end_date: date) -> str:
     '''Generate the SQL command to update scout_history for an active scout.'''
 
+    execute = cursor.execute
+    fetchone = cursor.fetchone
+
     retstr = "UPDATE scout_history SET end_date = '" + str(end_date) + "' WHERE end_date IS null AND person_id = " + str(pid) + ';'
     
     # leave team too
-    cursor.execute("SELECT team_id, scout_id FROM scout WHERE person_id = %s;" % str(pid))
+    execute("SELECT team_id, scout_id FROM scout WHERE person_id = %s;" % str(pid))
     scout = cursor.fetchone()
     if scout[0] is not None:
         retstr += scoutLeaveTeam(scout[1], end_date)
@@ -174,11 +186,14 @@ def scoutLeave(cursor, pid: int, end_date: date) -> str:
 def leaderRejoin(cursor, pid: int, is_junior: bool, start_date: date) -> str:
     '''Generate the SQL command to update leader_history for an inactive leader.'''
 
+    execute = cursor.execute
+    fetchone = cursor.fetchone
+
     historystr = "INSERT INTO leader_history (leader_history_id, person_id, start_date, is_junior) VALUES "
 
     # leader_history_id
-    cursor.execute("SELECT * FROM nextval('leader_history_leader_history_id_seq');")
-    seq = cursor.fetchone()
+    execute("SELECT * FROM nextval('leader_history_leader_history_id_seq');")
+    seq = fetchone()
     hid = seq[0]
 
     historystr += "(" + str(hid) + "," + str(pid) + ",'" + str(start_date) + "'," + str(is_junior) + ");"
@@ -188,17 +203,20 @@ def leaderRejoin(cursor, pid: int, is_junior: bool, start_date: date) -> str:
 def scoutRejoin(cursor, pid: int, start_date: date, team_id: int = None, team_join_date: date = None) -> str:
     '''Generate the SQL command to update scout_history for an inactive scout.'''
 
+    execute = cursor.execute
+    fetchone = cursor.fetchone
+
     historystr = "INSERT INTO scout_history (scout_history_id, person_id, start_date) VALUES "
 
     # scout_history_id
-    cursor.execute("SELECT * FROM nextval('scout_history_scout_history_id_seq');")
-    seq = cursor.fetchone()
+    execute("SELECT * FROM nextval('scout_history_scout_history_id_seq');")
+    seq = fetchone()
     hid = seq[0]
 
     historystr += "(" + str(hid) + "," + str(pid) + ",'" + str(start_date) + "');"
 
     # rejoin team too
-    cursor.execute("SELECT team_id, scout_id FROM scout WHERE person_id = %s;" % str(pid))
+    execute("SELECT team_id, scout_id FROM scout WHERE person_id = %s;" % str(pid))
     scout = cursor.fetchone()
     if team_id is not None:
         historystr += scoutJoinTeam(cursor, scout[1], team_id, team_join_date)
@@ -215,11 +233,14 @@ def scoutLeaveTeam(sid: int, leave_date: date) -> str:
 def scoutJoinTeam(cursor, sid: int, tid: int, join_date: date) -> str:
     '''Generate the SQL command to update scout_team_history for an active scout.'''
 
+    execute = cursor.execute
+    fetchone = cursor.fetchone
+
     thistorystr = " INSERT INTO scout_team_history (scout_team_history_id, team_id, scout_id, join_date) VALUES "
 
     # scout_team_history_id
-    cursor.execute("SELECT * FROM nextval('scout_team_history_scout_team_history_id_seq');")
-    seq = cursor.fetchone()
+    execute("SELECT * FROM nextval('scout_team_history_scout_team_history_id_seq');")
+    seq = fetchone()
     sthid = seq[0]
 
     thistorystr += "(" + str(sthid) + "," + str(tid) + "," + str(sid) + ",'" + str(join_date) + "');"
@@ -229,11 +250,14 @@ def scoutJoinTeam(cursor, sid: int, tid: int, join_date: date) -> str:
 def leaderJoinTeam(cursor, lid: int, tid: int, is_junior: bool, join_date: date) -> str:
     '''Generate the SQL command to update leader_team_history for an active leader.'''
 
+    execute = cursor.execute
+    fetchone = cursor.fetchone
+
     thistorystr = " INSERT INTO leader_team_history (leader_team_history_id, team_id, leader_id, is_junior, join_date) VALUES "
 
     # leader_team_history_id
-    cursor.execute("SELECT * FROM nextval('leader_team_history_leader_team_history_id_seq');")
-    seq = cursor.fetchone()
+    execute("SELECT * FROM nextval('leader_team_history_leader_team_history_id_seq');")
+    seq = fetchone()
     lthid = seq[0]
 
     thistorystr += "(" + str(lthid) + "," + str(tid) + "," + str(lid) + "," + str(is_junior) + ",'" + str(join_date) + "');"

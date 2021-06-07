@@ -14,10 +14,10 @@ def openConn():
     '''Opens a connection to the db. Returns (conn, cursor) tuple.'''
 
     # Connect to an existing database
-    conn = psycopg2.connect(database="datagentest", user="postgres", password=" ")
+    conn = psycopg2.connect(database="dgtopti", user="postgres", password=" ")
 
     # Open a cursor to perform db operations
-    return conn, conn.cursor()
+    return conn, conn.cursor(), conn.cursor().execute
 
 def closeConn(conn, cursor):
     '''Commits and closes connection to the db.'''
@@ -28,8 +28,6 @@ def closeConn(conn, cursor):
     # Close communication with the db
     cursor.close()
     conn.close()
-
-conn, cursor = openConn()
 
 def award(cursor, person_id: int, leader_id: int, i: int, category: int = None):
     '''Gives the person 1 or 2 awards depending on i'''
@@ -44,14 +42,13 @@ def award(cursor, person_id: int, leader_id: int, i: int, category: int = None):
 
     if i % 2 == 0:
         auxAwards = [auxAwards[0], auxAwards[1]]
-        cursor.execute(ag.giveRequirements(person_id, auxReqs[0], leader_id, startDate, today))
-        cursor.execute(ag.giveRequirements(person_id, auxReqs[1], leader_id, startDate, today))
+        execute(ag.giveRequirements(person_id, auxReqs[0], leader_id, startDate, today))
+        execute(ag.giveRequirements(person_id, auxReqs[1], leader_id, startDate, today))
     else:
         auxAwards = [auxAwards[0]]
-        cursor.execute(ag.giveRequirements(person_id, auxReqs[0], leader_id, startDate, today))
+        execute(ag.giveRequirements(person_id, auxReqs[0], leader_id, startDate, today))
 
-
-    cursor.execute(ag.giveAwards(person_id, auxAwards, leader_id, startDate, today))
+    execute(ag.giveAwards(person_id, auxAwards, leader_id, startDate, today))
 
 # Numbers
 nOffices = 40
@@ -102,9 +99,12 @@ scoutMaxBirthdays = [discoveryMaxBirthday, adventureMaxBirthday, expeditionMaxBi
 startDate = date(2019, 1, 1)
 today = date(2021, 1, 1)
 
+# Open connection
+conn, cursor, execute = openConn()
+
 # clear existing data
 print("Clearing data...")
-cursor.execute("SELECT * FROM clearall();")
+execute("SELECT * FROM clearall();")
 print("Generating data...")
 
 # setup toolbar
@@ -114,27 +114,27 @@ sys.stdout.flush()
 sys.stdout.write("\b" * (6)) # return to start of line
 
 # division_category has only 3 rows
-cursor.execute(eg.division.categorygen(cursor, 3, ["Discovery", "Adventure", "Expedition"], categories))
+execute(eg.division.categorygen(cursor, 3, ["Discovery", "Adventure", "Expedition"], categories))
 
 closeConn(conn, cursor)
 
 # Awards & requirements
 for i in range(4):
-    conn, cursor = openConn()
+    conn, cursor, execute = openConn()
 
     # Awards
     awards.append(list())
     try:
-        cursor.execute(ag.generate(cursor, nAwards, awards[i], categories[i]))
+        execute(ag.generate(cursor, nAwards, awards[i], categories[i]))
     except:
         # leader awards will cause an exception because of categories
-        cursor.execute(ag.generate(cursor, nAwards, awards[i], None))
+        execute(ag.generate(cursor, nAwards, awards[i], None))
 
     # Requirements
     requirements.append(list())
     for j in range(len(awards[i])):
         requirements[i].append(list())
-        cursor.execute(ag.requirementgen(cursor, nReqs, requirements[i][j], awards[i][j]))
+        execute(ag.requirementgen(cursor, nReqs, requirements[i][j], awards[i][j]))
 
     closeConn(conn, cursor)
 
@@ -142,24 +142,24 @@ for i in range(4):
 for i in range(nOffices):
 
     # TESTING
-    # if i == 1:
-    #     break
+    if i == 1:
+        break
 
-    conn, cursor = openConn()
+    conn, cursor, execute = openConn()
 
     auxPersons.clear()
     auxLeaders.clear()
     auxViceLeaders.clear()
     # gen leaders
-    cursor.execute(pg.generate(cursor, 2, leaderMinBirthday, leaderMaxBirthday, auxPersons))
-    cursor.execute(pg.leadergen(cursor, 2, auxPersons, False, auxLeaders, startDate))
+    execute(pg.generate(cursor, 2, leaderMinBirthday, leaderMaxBirthday, auxPersons))
+    execute(pg.leadergen(cursor, 2, auxPersons, False, auxLeaders, startDate))
     for p in auxPersons:
         award(cursor, p, 1, p)
         if p % 2 == 0:
-            cursor.execute(pg.leaderPause(cursor, p, startDate, today, False))
+            execute(pg.leaderPause(cursor, p, startDate, today, False))
     auxViceLeaders.append(auxLeaders[1])
     # gen office
-    cursor.execute(eg.office.generate(cursor, 1, auxLeaders, auxViceLeaders, offices))
+    execute(eg.office.generate(cursor, 1, auxLeaders, auxViceLeaders, offices))
 
     # Outposts
     for j in range(nOutposts):
@@ -176,15 +176,15 @@ for i in range(nOffices):
         auxLeaders.clear()
         auxViceLeaders.clear()
         # gen leaders
-        cursor.execute(pg.generate(cursor, 2, leaderMinBirthday, leaderMaxBirthday, auxPersons))
-        cursor.execute(pg.leadergen(cursor, 2, auxPersons, False, auxLeaders, startDate))
+        execute(pg.generate(cursor, 2, leaderMinBirthday, leaderMaxBirthday, auxPersons))
+        execute(pg.leadergen(cursor, 2, auxPersons, False, auxLeaders, startDate))
         for p in auxPersons:
             award(cursor, p, 1, p)
             if p % 2 == 0:
-                cursor.execute(pg.leaderPause(cursor, p, startDate, today, False))
+                execute(pg.leaderPause(cursor, p, startDate, today, False))
         auxViceLeaders.append(auxLeaders[1])
         # gen outpost
-        cursor.execute(eg.outpost.generate(cursor, 1, offices[i], auxLeaders, auxViceLeaders, outposts))
+        execute(eg.outpost.generate(cursor, 1, offices[i], auxLeaders, auxViceLeaders, outposts))
 
         # Divisions
         for k in range(nDivisions):
@@ -192,15 +192,15 @@ for i in range(nOffices):
             auxLeaders.clear()
             auxViceLeaders.clear()
             # gen leaders
-            cursor.execute(pg.generate(cursor, 2, leaderMinBirthday, leaderMaxBirthday, auxPersons))
-            cursor.execute(pg.leadergen(cursor, 2, auxPersons, False, auxLeaders, startDate))
+            execute(pg.generate(cursor, 2, leaderMinBirthday, leaderMaxBirthday, auxPersons))
+            execute(pg.leadergen(cursor, 2, auxPersons, False, auxLeaders, startDate))
             for p in auxPersons:
                 award(cursor, p, 1, p)
                 if p % 2 == 0:
-                    cursor.execute(pg.leaderPause(cursor, p, startDate, today, False))
+                    execute(pg.leaderPause(cursor, p, startDate, today, False))
             auxViceLeaders.append(auxLeaders[1])
             # gen division
-            cursor.execute(eg.division.generate(cursor, 1, categories[k], outposts[j], auxLeaders, auxViceLeaders, divisions))
+            execute(eg.division.generate(cursor, 1, categories[k], outposts[j], auxLeaders, auxViceLeaders, divisions))
 
             # Teams
             for l in range(nTeams):
@@ -209,44 +209,44 @@ for i in range(nOffices):
                 auxTeams.clear()
                 auxViceLeaders.clear()
                 # gen leaders
-                cursor.execute(pg.generate(cursor, 2, leaderMinBirthday, leaderMaxBirthday, auxPersons))
-                cursor.execute(pg.leadergen(cursor, 2, auxPersons, False, auxLeaders, startDate))
+                execute(pg.generate(cursor, 2, leaderMinBirthday, leaderMaxBirthday, auxPersons))
+                execute(pg.leadergen(cursor, 2, auxPersons, False, auxLeaders, startDate))
                 for p in auxPersons:
                     award(cursor, p, 1, p)
                     if p % 2 == 0:
-                        cursor.execute(pg.leaderPause(cursor, p, startDate, today, False))
+                        execute(pg.leaderPause(cursor, p, startDate, today, False))
                 auxViceLeaders.append(auxLeaders[1])
                 # gen team
                 if l % 2 == 0:
                     gender = 'M'
                 else:
                     gender = 'F'
-                cursor.execute(tg.generate(cursor, 1, divisions[k], auxLeaders, auxViceLeaders, auxTeams, gender, startDate))
-                cursor.execute(tg.generate(cursor, 1, divisions[k], auxLeaders, auxViceLeaders, auxTeams, gender, startDate))
+                execute(tg.generate(cursor, 1, divisions[k], auxLeaders, auxViceLeaders, auxTeams, gender, startDate))
+                execute(tg.generate(cursor, 1, divisions[k], auxLeaders, auxViceLeaders, auxTeams, gender, startDate))
 
                 # Scouts
                 auxPersons.clear()
                 # gen scouts
-                cursor.execute(pg.generate(cursor, nScouts, scoutMinBirthdays[k], scoutMaxBirthdays[k], auxPersons, gender))
-                cursor.execute(pg.scoutgen(cursor, nScouts, auxPersons, auxScouts, startDate, auxTeams[0], startDate))
+                execute(pg.generate(cursor, nScouts, scoutMinBirthdays[k], scoutMaxBirthdays[k], auxPersons, gender))
+                execute(pg.scoutgen(cursor, nScouts, auxPersons, auxScouts, startDate, auxTeams[0], startDate))
                 for p in auxPersons:
                     award(cursor, p, auxLeaders[0], p, categories[k])
                 for n in range(4):
-                    cursor.execute(pg.scoutPause(cursor, auxPersons[n], startDate, today, auxTeams[1]))
+                    execute(pg.scoutPause(cursor, auxPersons[n], startDate, today, auxTeams[1]))
 
     # Generate superfluous leaders for this office
     auxPersons.clear()
     auxLeaders.clear()
     for s in range(4098):
-        cursor.execute(pg.generate(cursor, 1, leaderMinBirthday, leaderMaxBirthday, auxPersons))
-        cursor.execute(pg.leadergen(cursor, 1, auxPersons, True, auxLeaders, startDate))
+        execute(pg.generate(cursor, 1, leaderMinBirthday, leaderMaxBirthday, auxPersons))
+        execute(pg.leadergen(cursor, 1, auxPersons, True, auxLeaders, startDate))
         award(cursor, auxPersons[s], 1, s)
         if s < 3484:
-            cursor.execute(pg.leaderPause(cursor, auxPersons[s], startDate, today, False))
+            execute(pg.leaderPause(cursor, auxPersons[s], startDate, today, False))
         if s < 4000:
-            cursor.execute(tg.update(cursor, auxTeams[0], leader_id=auxLeaders[s], _date=today))
+            execute(tg.update(cursor, auxTeams[0], leader_id=auxLeaders[s], _date=today))
         if s < 2500:
-            cursor.execute(tg.update(cursor, auxTeams[1], junior_leader_id=auxLeaders[s], _date=today))
+            execute(tg.update(cursor, auxTeams[1], junior_leader_id=auxLeaders[s], _date=today))
 
     # commit for this office
     closeConn(conn, cursor)
