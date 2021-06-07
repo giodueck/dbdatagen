@@ -1,5 +1,6 @@
 from datetime import date
 from random import randrange as rr
+from datetime import timedelta
 import names
 import miscgen
 
@@ -63,7 +64,7 @@ def generate(cursor, c: int, minBirthday: date, maxBirthday: date, ids: list, ge
 
     return retstr
 
-def leadergen(cursor, c: int, person_ids: list, is_junior: bool, ids: list, historyids: list, start_date: date) -> str:
+def leadergen(cursor, c: int, person_ids: list, is_junior: bool, ids: list, start_date: date) -> str:
     '''Generate the SQL command to make the person person_id a leader.'''
 
     # sql format is
@@ -89,7 +90,6 @@ def leadergen(cursor, c: int, person_ids: list, is_junior: bool, ids: list, hist
         cursor.execute("SELECT * FROM nextval('leader_history_leader_history_id_seq');")
         seq = cursor.fetchone()
         hid = seq[0]
-        historyids.append(hid)
 
         # add to SQL strings
         retstr += "(" + str(id) + "," + str(person_ids[i]) + "," + str(is_junior) + ")"
@@ -100,7 +100,7 @@ def leadergen(cursor, c: int, person_ids: list, is_junior: bool, ids: list, hist
 
     return retstr + historystr
 
-def scoutgen(cursor, c: int, person_ids: list, ids: list, historyids: list, start_date: date, team_id: int = None, team_join_date: date = None, thistoryids: list = None) -> str:
+def scoutgen(cursor, c: int, person_ids: list, ids: list, start_date: date, team_id: int = None, team_join_date: date = None) -> str:
     '''Generate the SQL command to make the person person_id a scout.'''
 
     # sql format is
@@ -132,14 +132,12 @@ def scoutgen(cursor, c: int, person_ids: list, ids: list, historyids: list, star
         cursor.execute("SELECT * FROM nextval('scout_history_scout_history_id_seq');")
         seq = cursor.fetchone()
         hid = seq[0]
-        historyids.append(hid)
 
         # scout_team_history_id
         if team_id != 'null':
             cursor.execute("SELECT * FROM nextval('scout_team_history_scout_team_history_id_seq');")
             seq = cursor.fetchone()
             thid = seq[0]
-            thistoryids.append(thid)
 
         # add to SQL string
         retstr += "(" + str(id) + "," + str(person_ids[i]) + "," + str(team_id) + ")"
@@ -173,7 +171,7 @@ def scoutLeave(cursor, pid: int, end_date: date) -> str:
     
     return retstr
 
-def leaderRejoin(cursor, pid: int, is_junior: bool, historyids: list, start_date: date) -> str:
+def leaderRejoin(cursor, pid: int, is_junior: bool, start_date: date) -> str:
     '''Generate the SQL command to update leader_history for an inactive leader.'''
 
     historystr = "INSERT INTO leader_history (leader_history_id, person_id, start_date, is_junior) VALUES "
@@ -182,13 +180,12 @@ def leaderRejoin(cursor, pid: int, is_junior: bool, historyids: list, start_date
     cursor.execute("SELECT * FROM nextval('leader_history_leader_history_id_seq');")
     seq = cursor.fetchone()
     hid = seq[0]
-    historyids.append(hid)
 
     historystr += "(" + str(hid) + "," + str(pid) + ",'" + str(start_date) + "'," + str(is_junior) + ");"
 
     return historystr
 
-def scoutRejoin(cursor, pid: int, historyids: list, start_date: date, team_id: int = None, team_join_date: date = None, thistoryids: list = None) -> str:
+def scoutRejoin(cursor, pid: int, start_date: date, team_id: int = None, team_join_date: date = None) -> str:
     '''Generate the SQL command to update scout_history for an inactive scout.'''
 
     historystr = "INSERT INTO scout_history (scout_history_id, person_id, start_date) VALUES "
@@ -197,7 +194,6 @@ def scoutRejoin(cursor, pid: int, historyids: list, start_date: date, team_id: i
     cursor.execute("SELECT * FROM nextval('scout_history_scout_history_id_seq');")
     seq = cursor.fetchone()
     hid = seq[0]
-    historyids.append(hid)
 
     historystr += "(" + str(hid) + "," + str(pid) + ",'" + str(start_date) + "');"
 
@@ -205,7 +201,7 @@ def scoutRejoin(cursor, pid: int, historyids: list, start_date: date, team_id: i
     cursor.execute("SELECT team_id, scout_id FROM scout WHERE person_id = %s;" % str(pid))
     scout = cursor.fetchone()
     if team_id is not None:
-        historystr += scoutJoinTeam(cursor, scout[1], team_id, team_join_date, thistoryids)
+        historystr += scoutJoinTeam(cursor, scout[1], team_id, team_join_date)
     
     return historystr
 
@@ -216,7 +212,7 @@ def scoutLeaveTeam(sid: int, leave_date: date) -> str:
     retstr += "UPDATE scout SET team_id = null WHERE scout_id = %s;" % str(sid)
     return retstr
 
-def scoutJoinTeam(cursor, sid: int, tid: int, join_date: date, thistoryids: list) -> str:
+def scoutJoinTeam(cursor, sid: int, tid: int, join_date: date) -> str:
     '''Generate the SQL command to update scout_team_history for an active scout.'''
 
     thistorystr = " INSERT INTO scout_team_history (scout_team_history_id, team_id, scout_id, join_date) VALUES "
@@ -225,13 +221,12 @@ def scoutJoinTeam(cursor, sid: int, tid: int, join_date: date, thistoryids: list
     cursor.execute("SELECT * FROM nextval('scout_team_history_scout_team_history_id_seq');")
     seq = cursor.fetchone()
     sthid = seq[0]
-    thistoryids.append(sthid)
 
     thistorystr += "(" + str(sthid) + "," + str(tid) + "," + str(sid) + ",'" + str(join_date) + "');"
 
     return thistorystr
 
-def leaderJoinTeam(cursor, lid: int, tid: int, is_junior: bool, join_date: date, thistoryids: list) -> str:
+def leaderJoinTeam(cursor, lid: int, tid: int, is_junior: bool, join_date: date) -> str:
     '''Generate the SQL command to update leader_team_history for an active leader.'''
 
     thistorystr = " INSERT INTO leader_team_history (leader_team_history_id, team_id, leader_id, is_junior, join_date) VALUES "
@@ -240,8 +235,27 @@ def leaderJoinTeam(cursor, lid: int, tid: int, is_junior: bool, join_date: date,
     cursor.execute("SELECT * FROM nextval('leader_team_history_leader_team_history_id_seq');")
     seq = cursor.fetchone()
     lthid = seq[0]
-    thistoryids.append(lthid)
 
     thistorystr += "(" + str(lthid) + "," + str(tid) + "," + str(lid) + "," + str(is_junior) + ",'" + str(join_date) + "');"
 
     return thistorystr
+
+def scoutPause(cursor, pid: int, minDate: date, maxDate: date, tid: int) -> str:
+    '''Generates the SQL commands to update scout_history and simulate a scout exiting and reentering the programme.'''
+
+    pauseDate = miscgen.gendate(minDate, maxDate)
+
+    retstr = scoutLeave(cursor, pid, pauseDate)
+    pauseDate.__add__(timedelta(days=30))
+    retstr += scoutRejoin(cursor, pid, pauseDate, tid, pauseDate)
+    return retstr
+
+def leaderPause(cursor, pid: int, minDate: date, maxDate: date, is_junior: bool) -> str:
+    '''Generates the SQL commands to update leader_history and simulate a leader exiting and reentering the programme.'''
+
+    pauseDate = miscgen.gendate(minDate, maxDate)
+
+    retstr = leaderLeave(pid, pauseDate)
+    pauseDate.__add__(timedelta(days=30))
+    retstr += leaderRejoin(cursor, pid, is_junior, pauseDate)
+    return retstr

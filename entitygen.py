@@ -79,7 +79,7 @@ class division:
         retstr += ";"
         return retstr
     
-    def generate(cursor, c: int, division_category_id: int, outpost_ids: list, leader_ids: list, vice_leader_ids: list, ids: list) -> str:
+    def generate(cursor, c: int, division_category_id: int, outpost_id: int, leader_ids: list, vice_leader_ids: list, ids: list) -> str:
         '''Generate the SQL command to insert a new division.'''
 
         retstr = "INSERT INTO division (division_id, division_category_id, outpost_id, leader_id, vice_leader_id) VALUES "
@@ -96,7 +96,7 @@ class division:
             ids.append(id)
 
             # add to SQL string
-            retstr += '(' + str(id) + ',' + str(division_category_id) + ',' + str(outpost_ids[i]) + ',' + str(leader_ids[i]) + ',' + str(vice_leader_ids[i]) + ")"
+            retstr += '(' + str(id) + ',' + str(division_category_id) + ',' + str(outpost_id) + ',' + str(leader_ids[i]) + ',' + str(vice_leader_ids[i]) + ")"
         
         retstr += ";"
         return retstr

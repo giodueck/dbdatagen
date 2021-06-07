@@ -8,11 +8,26 @@ from datetime import date
 import teamgen as tg
 import awardgen as ag
 
-# Connect to an existing database
-conn = psycopg2.connect(database="datagentest", user="postgres", password=" ")
+def openConn():
+    '''Opens a connection to the db. Returns (conn, cursor) tuple.'''
 
-# Open a cursor to perform db operations
-cursor = conn.cursor()
+    # Connect to an existing database
+    conn = psycopg2.connect(database="datagentest", user="postgres", password=" ")
+
+    # Open a cursor to perform db operations
+    return conn, conn.cursor()
+
+def closeConn(conn, cursor):
+    '''Commits and closes connection to the db.'''
+
+    # Commit
+    conn.commit()
+
+    # Close communication with the db
+    cursor.close()
+    conn.close()
+
+conn, cursor = openConn()
 
 # Lists to store created ids
 lpids = list()
@@ -153,9 +168,5 @@ cursor.execute(tg.replaceTeamLeader(cursor, tids[0], leaverlids[0], False, date(
 print("                   ...add junior team leader")
 cursor.execute(tg.replaceTeamLeader(cursor, tids[0], tlids[0], True, date(2021, 4, 15), lthids))
 
-# Commit
-conn.commit()
-
 # Close communication with the db
-cursor.close()
-conn.close()
+closeConn(conn, cursor)
