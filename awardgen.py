@@ -21,7 +21,7 @@ def generate(cursor, c: int, ids: list, division_category_id: int = None, parent
     for i in range(c):
         # formatting
         if i > 0:
-            retstr += ", "
+            retstr = "".join([retstr, ", "])
 
         # award_id
         execute("SELECT * FROM nextval('award_award_id_seq');")
@@ -30,7 +30,6 @@ def generate(cursor, c: int, ids: list, division_category_id: int = None, parent
         ids.append(id)
         
         # name
-        # an = gen.word()
         an = namegenerator.gen(separator=' ')
 
         # parent_award_id for first loop
@@ -38,12 +37,13 @@ def generate(cursor, c: int, ids: list, division_category_id: int = None, parent
             parent_award_id = 'null'
         
         # add to SQL string
-        retstr += "(" + str(id) + ",'" + an + "'," + str(division_category_id) + ',' + str(parent_award_id) + ")"
+        sql = "(%s,'%s',%s,%s)" % (str(id), an, str(division_category_id), str(parent_award_id))
+        retstr = "".join([retstr, sql])
 
         # parent_award_id for other loops
         parent_award_id = id
 
-    retstr += ';'
+    retstr = "".join([retstr, ";"])
 
     return retstr
 
@@ -58,7 +58,7 @@ def requirementgen(cursor, c: int, ids: list, award_id: int) -> str:
     for i in range(c):
         # formatting
         if i > 0:
-            retstr += ", "
+            retstr = "".join([retstr, ", "])
 
         # requirement_id
         execute("SELECT * FROM nextval('requirement_requirement_id_seq');")
@@ -70,9 +70,11 @@ def requirementgen(cursor, c: int, ids: list, award_id: int) -> str:
         des = namegenerator.gen()   # generar una frase usando cadenas de Markov tomaba tiempo inecesariamente
         
         # add to SQL string
-        retstr += "(" + str(id) + ',' + str(award_id) + ",'" + des + "')"
+        # sql = "(" + str(id) + ',' + str(award_id) + ",'" + des + "')"
+        sql = "(%s,%s,'%s')" % (str(id), str(award_id), des)
+        retstr = "".join([retstr, sql])
 
-    retstr += ';'
+    retstr = "".join([retstr, ';'])
 
     return retstr
 
@@ -89,15 +91,17 @@ def giveRequirements(person_id: int, rids: list, leader_id: int, minDate: date, 
     for i in range(len(rids)):
         # formatting
         if i > 0:
-            retstr += ", "
+            retstr = "".join([retstr, ", "])
         
         # date
         rd = miscgen.gendate(minDate, maxDate)
         
         # add to SQL string
-        retstr += "(" + str(person_id) + ',' + str(rids[i]) + ",'" + str(rd) + "'," + str(leader_id) + ")"
+        # sql = "(" + str(person_id) + ',' + str(rids[i]) + ",'" + str(rd) + "'," + str(leader_id) + ")"
+        sql = "(%s,%s,'%s',%s)" % (str(person_id), str(rids[i]), str(rd), str(leader_id))
+        retstr = "".join([retstr, sql])
 
-    retstr += ';'
+    retstr = "".join([retstr, ';'])
 
     return retstr
 
@@ -114,14 +118,16 @@ def giveAwards(person_id: int, aids: list, leader_id: int, minDate: date, maxDat
     for i in range(len(aids)):
         # formatting
         if i > 0:
-            retstr += ", "
+            retstr = "".join([retstr, ", "])
         
         # date
         rd = miscgen.gendate(minDate, maxDate)
         
         # add to SQL string
-        retstr += "(" + str(person_id) + ',' + str(aids[i]) + ",'" + str(rd) + "'," + str(leader_id) + ")"
+        # sql = "(" + str(person_id) + ',' + str(aids[i]) + ",'" + str(rd) + "'," + str(leader_id) + ")"
+        sql = "(%s,%s,'%s',%s)" % (str(person_id), str(aids[i]), str(rd), str(leader_id))
+        retstr = "".join([retstr, sql])
 
-    retstr += ';'
+    retstr = "".join([retstr, ';'])
 
     return retstr

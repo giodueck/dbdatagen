@@ -13,48 +13,48 @@ def generate() -> str:
     finished_name = ""
     pd = 0
     if(random.random()  > 0.4):
-        finished_name = finished_name + random.choice(doubles)
+        finished_name = "".join([finished_name, random.choice(doubles)])
         if(random.random()  > 0.6):
-            finished_name = finished_name + random.choice(postdoubles)
+            finished_name = "".join([finished_name, random.choice(postdoubles)])
             pd = 1
         else:
             finished_name = finished_name[0:len(finished_name) - 1]
     else:
-        finished_name = finished_name + random.choice(first)
+        finished_name = "".join([finished_name, random.choice(first)])
 
     if(random.random()  > 0.5 and not pd):
         if(finished_name.endswith("r") or finished_name.endswith("b")):
             if(random.random()  > 0.4):
-                finished_name = finished_name + "ble"
+                finished_name = "".join([finished_name, "ble"])
             else:
-                finished_name = finished_name + "gle"
+                finished_name = "".join([finished_name, "gle"])
         elif(finished_name.endswith("n") or finished_name.endswith("d")):
-            finished_name = finished_name + "dle"
+            finished_name = "".join([finished_name, "dle"])
         elif(finished_name.endswith("s")):
-            finished_name = finished_name + "tle"
+            finished_name = "".join([finished_name, "tle"])
 
     if(random.random()  > 0.7 and finished_name.endswith("le")):
-        finished_name = finished_name + "s"
+        finished_name = "".join([finished_name, "s"])
 
     elif(random.random()  > 0.5):
         if(finished_name.endswith("n")):
             if(random.random()  > 0.5):
-                finished_name = finished_name + "s"
+                finished_name = "".join([finished_name, "s"])
             else:
-                finished_name = finished_name + "d"
+                finished_name = "".join([finished_name, "d"])
         elif(finished_name.endswith("m")):
-            finished_name = finished_name + "s"
+            finished_name = "".join([finished_name, "s"])
 
     if(random.random()  > 0.7):
-        finished_name = finished_name + random.choice(mid)
-    finished_name = finished_name + random.choice(last)
+        finished_name = "".join([finished_name, random.choice(mid)])
+    finished_name = "".join([finished_name, random.choice(last)])
 
     fix = finished_name.rpartition(' ')
     if(fix[1] == ' '):
-        finished_name = fix[0] + ' ' + fix[2].capitalize()
+        finished_name = " ".join([fix[0], fix[2].capitalize()])
 
     fix = finished_name.rpartition('-')
     if(fix[1] == '-'):
-        finished_name = fix[0] + '-' + fix[2].capitalize()
+        finished_name = "-".join([fix[0], fix[2].capitalize()])
 
     return finished_name

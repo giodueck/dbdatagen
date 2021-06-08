@@ -29,7 +29,7 @@ def generate(cursor, c: int, minBirthday: date, maxBirthday: date, ids: list, ge
     for i in range(c):
         # formatting
         if i > 0:
-            retstr += ", "
+            retstr = "".join([retstr, ", "])
 
         # person_id
         execute("SELECT * FROM nextval('person_person_id_seq');")
@@ -58,12 +58,14 @@ def generate(cursor, c: int, minBirthday: date, maxBirthday: date, ids: list, ge
         dob = miscgen.gendate(minBirthday, maxBirthday)
 
         # add to SQL string
-        retstr += "('" + str(id) + "','" + fn + "','" + ln + "','" + str(dob) + "','" + gender + "')"
+        # sql += "('" + str(id) + "','" + fn + "','" + ln + "','" + str(dob) + "','" + gender + "')"
+        sql = "(%s,'%s','%s','%s','%s')" % (str(id), fn, ln, str(dob), gender)
+        retstr = "".join([retstr, sql])
 
         # reset gender if None
         gender = og
     
-    retstr += ";"
+    retstr = "".join([retstr, ";"])
 
     return retstr
 
@@ -83,8 +85,8 @@ def leadergen(cursor, c: int, person_ids: list, is_junior: bool, ids: list, star
     for i in range(c):
         # formatting
         if i > 0:
-            retstr += ", "
-            historystr += ", "
+            retstr = "".join([retstr, ", "])
+            historystr = "".join([historystr, ", "])
         
         # leader_id
         execute("SELECT * FROM nextval('leader_leader_id_seq_1_1');")
@@ -98,13 +100,17 @@ def leadergen(cursor, c: int, person_ids: list, is_junior: bool, ids: list, star
         hid = seq[0]
 
         # add to SQL strings
-        retstr += "(" + str(id) + "," + str(person_ids[i]) + "," + str(is_junior) + ")"
-        historystr += "(" + str(hid) + "," + str(person_ids[i]) + ",'" + str(start_date) + "'," + str(is_junior) + ")"
+        # sql += "(" + str(id) + "," + str(person_ids[i]) + "," + str(is_junior) + ")"
+        sql = "(%s,%s,%s)" % (str(id), str(person_ids[i]), str(is_junior))
+        retstr = "".join([retstr, sql])
+        # hsql += "(" + str(hid) + "," + str(person_ids[i]) + ",'" + str(start_date) + "'," + str(is_junior) + ")"
+        hsql = "(%s,%s,'%s',%s)" % (str(hid), str(person_ids[i]), str(start_date), str(is_junior))
+        historystr = "".join([historystr, hsql])
 
-    retstr += "; "
-    historystr += ";"
+    retstr = "".join([retstr, "; "])
+    historystr = "".join([historystr, ";"])
 
-    return retstr + historystr
+    return "".join([retstr, historystr])
 
 def scoutgen(cursor, c: int, person_ids: list, ids: list, start_date: date, team_id: int = None, team_join_date: date = None) -> str:
     '''Generate the SQL command to make the person person_id a scout.'''
@@ -126,10 +132,10 @@ def scoutgen(cursor, c: int, person_ids: list, ids: list, start_date: date, team
     for i in range(c):
         # formatting
         if i > 0:
-            retstr += ", "
-            historystr += ", "
+            retstr = "".join([retstr, ", "])
+            historystr = "".join([historystr, ", "])
             if team_id != 'null':
-                thistorystr += ", "
+                thistorystr = "".join([thistorystr, ", "])
         
         # scout_id
         execute("SELECT * FROM nextval('scout_scout_id_seq');")
@@ -149,23 +155,28 @@ def scoutgen(cursor, c: int, person_ids: list, ids: list, start_date: date, team
             thid = seq[0]
 
         # add to SQL string
-        retstr += "(" + str(id) + "," + str(person_ids[i]) + "," + str(team_id) + ")"
-        historystr += "(" + str(hid) + "," + str(person_ids[i]) + ",'" + str(start_date) + "')"
+        # sql += "(" + str(id) + "," + str(person_ids[i]) + "," + str(team_id) + ")"
+        sql = "(%s,%s,%s)" % (str(id), str(person_ids[i]), str(team_id))
+        retstr = "".join([retstr, sql])
+        # hsql += "(" + str(hid) + "," + str(person_ids[i]) + ",'" + str(start_date) + "')"
+        hsql = "(%s,%s,'%s')" % (str(hid), str(person_ids[i]), str(start_date))
+        historystr = "".join([historystr, hsql])
         if team_id != 'null':
-            thistorystr += "(" + str(thid) + "," + str(team_id) + ',' + str(id) + ",'" + str(team_join_date) + "')"
+            # thsql += "(" + str(thid) + "," + str(team_id) + ',' + str(id) + ",'" + str(team_join_date) + "')"
+            thsql = "(%s,%s,%s,'%s')" % (str(thid), str(team_id), str(id), str(team_join_date))
+            thistorystr = "".join([thistorystr, thsql])
 
-    retstr += "; "
-    historystr += ";"
+    retstr = "".join([retstr, "; "])
+    historystr = "".join([historystr, ";"])
     if team_id != 'null':
-        thistorystr += ";"
-        historystr += thistorystr
+        historystr = "; ".join([historystr, thistorystr])
 
-    return retstr + historystr
+    return "".join([retstr, historystr])
 
 def leaderLeave(pid: int, end_date: date) -> str:
     '''Generate the SQL command to update leader_history for an active leader.'''
 
-    return  "UPDATE leader_history SET end_date = '" + str(end_date) + "' WHERE end_date IS null AND person_id = " + str(pid) + ';'
+    return  "UPDATE leader_history SET end_date = '%s' WHERE end_date IS null AND person_id = %s;" % (str(end_date), str(pid))
 
 def scoutLeave(cursor, pid: int, end_date: date) -> str:
     '''Generate the SQL command to update scout_history for an active scout.'''
@@ -173,13 +184,13 @@ def scoutLeave(cursor, pid: int, end_date: date) -> str:
     execute = cursor.execute
     fetchone = cursor.fetchone
 
-    retstr = "UPDATE scout_history SET end_date = '" + str(end_date) + "' WHERE end_date IS null AND person_id = " + str(pid) + ';'
+    retstr = "UPDATE scout_history SET end_date = '%s' WHERE end_date IS null AND person_id = %s;" % (str(end_date), str(pid))
     
     # leave team too
     execute("SELECT team_id, scout_id FROM scout WHERE person_id = %s;" % str(pid))
     scout = cursor.fetchone()
     if scout[0] is not None:
-        retstr += scoutLeaveTeam(scout[1], end_date)
+        retstr = "".join([retstr, scoutLeaveTeam(scout[1], end_date)])
     
     return retstr
 
@@ -196,9 +207,8 @@ def leaderRejoin(cursor, pid: int, is_junior: bool, start_date: date) -> str:
     seq = fetchone()
     hid = seq[0]
 
-    historystr += "(" + str(hid) + "," + str(pid) + ",'" + str(start_date) + "'," + str(is_junior) + ");"
-
-    return historystr
+    sql = "(%s,%s,'%s',%s);" % (str(hid), str(pid), str(start_date), str(is_junior))
+    return "".join([historystr, sql])
 
 def scoutRejoin(cursor, pid: int, start_date: date, team_id: int = None, team_join_date: date = None) -> str:
     '''Generate the SQL command to update scout_history for an inactive scout.'''
@@ -213,21 +223,22 @@ def scoutRejoin(cursor, pid: int, start_date: date, team_id: int = None, team_jo
     seq = fetchone()
     hid = seq[0]
 
-    historystr += "(" + str(hid) + "," + str(pid) + ",'" + str(start_date) + "');"
+    sql = "(%s,%s,'%s');" % (str(hid), str(pid), str(start_date))
+    historystr = "".join([historystr, sql])
 
     # rejoin team too
     execute("SELECT team_id, scout_id FROM scout WHERE person_id = %s;" % str(pid))
     scout = cursor.fetchone()
     if team_id is not None:
-        historystr += scoutJoinTeam(cursor, scout[1], team_id, team_join_date)
+        historystr = "".join([historystr, scoutJoinTeam(cursor, scout[1], team_id, team_join_date)])
     
     return historystr
 
 def scoutLeaveTeam(sid: int, leave_date: date) -> str:
     '''Generate the SQL command to update scout_team_history for an active scout.'''
 
-    retstr = "UPDATE scout_team_history SET leave_date = '" + str(leave_date) + "' WHERE leave_date IS null AND scout_id = " + str(sid) + ';'
-    retstr += "UPDATE scout SET team_id = null WHERE scout_id = %s;" % str(sid)
+    retstr = "UPDATE scout_team_history SET leave_date = '%s' WHERE leave_date IS null AND scout_id = %s;" % (str(leave_date), str(sid))
+    retstr = "".join([retstr, "UPDATE scout SET team_id = null WHERE scout_id = %s;" % str(sid)])
     return retstr
 
 def scoutJoinTeam(cursor, sid: int, tid: int, join_date: date) -> str:
@@ -243,9 +254,8 @@ def scoutJoinTeam(cursor, sid: int, tid: int, join_date: date) -> str:
     seq = fetchone()
     sthid = seq[0]
 
-    thistorystr += "(" + str(sthid) + "," + str(tid) + "," + str(sid) + ",'" + str(join_date) + "');"
-
-    return thistorystr
+    sql = "(%s,%s,%s,'%s');" % (str(sthid), str(tid), str(sid), str(join_date))
+    return "".join([thistorystr, sql])
 
 def leaderJoinTeam(cursor, lid: int, tid: int, is_junior: bool, join_date: date) -> str:
     '''Generate the SQL command to update leader_team_history for an active leader.'''
@@ -260,9 +270,8 @@ def leaderJoinTeam(cursor, lid: int, tid: int, is_junior: bool, join_date: date)
     seq = fetchone()
     lthid = seq[0]
 
-    thistorystr += "(" + str(lthid) + "," + str(tid) + "," + str(lid) + "," + str(is_junior) + ",'" + str(join_date) + "');"
-
-    return thistorystr
+    sql = "(%s,%s,%s,%s,'%s');" % (str(lthid), str(tid), str(lid), str(is_junior), str(join_date))
+    return "".join([thistorystr, sql])
 
 def scoutPause(cursor, pid: int, minDate: date, maxDate: date, tid: int) -> str:
     '''Generates the SQL commands to update scout_history and simulate a scout exiting and reentering the programme.'''
@@ -271,7 +280,7 @@ def scoutPause(cursor, pid: int, minDate: date, maxDate: date, tid: int) -> str:
 
     retstr = scoutLeave(cursor, pid, pauseDate)
     pauseDate.__add__(timedelta(days=30))
-    retstr += scoutRejoin(cursor, pid, pauseDate, tid, pauseDate)
+    retstr = "".join([retstr, scoutRejoin(cursor, pid, pauseDate, tid, pauseDate)])
     return retstr
 
 def leaderPause(cursor, pid: int, minDate: date, maxDate: date, is_junior: bool) -> str:
@@ -281,5 +290,5 @@ def leaderPause(cursor, pid: int, minDate: date, maxDate: date, is_junior: bool)
 
     retstr = leaderLeave(pid, pauseDate)
     pauseDate.__add__(timedelta(days=30))
-    retstr += leaderRejoin(cursor, pid, is_junior, pauseDate)
+    retstr = "".join([retstr, leaderRejoin(cursor, pid, is_junior, pauseDate)])
     return retstr

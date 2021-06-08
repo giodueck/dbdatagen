@@ -13,7 +13,7 @@ class office:
         for i in range(c):
             # formatting
             if i > 0:
-                retstr += ", "
+                retstr = "".join([retstr, ", "])
 
             # office_id
             execute("SELECT * FROM nextval('office_office_id_seq');")
@@ -26,9 +26,11 @@ class office:
                 region = pngen.generate()
 
             # add to SQL string
-            retstr += "(" + str(id) + ',' + str(leader_ids[i]) + ',' + str(vice_leader_ids[i]) + ",'" + region + "')"
+            # sql += "(" + str(id) + ',' + str(leader_ids[i]) + ',' + str(vice_leader_ids[i]) + ",'" + region + "')"
+            sql = "(%s,%s,%s,'%s')" % (str(id), str(leader_ids[i]), str(vice_leader_ids[i]), region)
+            retstr = "".join([retstr, sql])
         
-        retstr += ";"
+        retstr = "".join([retstr, ";"])
         return retstr
 
 class outpost:
@@ -43,7 +45,7 @@ class outpost:
         for i in range(c):
             # formatting
             if i > 0:
-                retstr += ", "
+                retstr = "".join([retstr, ", "])
 
             # outpost_id and number
             execute("SELECT * FROM nextval('outpost_outpost_id_seq');")
@@ -57,9 +59,11 @@ class outpost:
             n = names.get_last_name()
 
             # add to SQL string
-            retstr += "(" + str(id) + ',' + str(office_id) + ',' + str(leader_ids[i]) + ',' + str(vice_leader_ids[i]) + ',' + str(first_outpost_number + i) + ",'" + n + "')"
-        
-        retstr += ";"
+            # sql += "(" + str(id) + ',' + str(office_id) + ',' + str(leader_ids[i]) + ',' + str(vice_leader_ids[i]) + ',' + str(first_outpost_number + i) + ",'" + n + "')"
+            sql = "(%s,%s,%s,%s,%s,'%s')" % (str(id), str(office_id), str(leader_ids[i]), str(vice_leader_ids[i]), str(first_outpost_number + i), n)
+            retstr = "".join([retstr, sql])
+
+        retstr = "".join([retstr, ";"])
         return retstr
 
 class division:
@@ -74,7 +78,7 @@ class division:
         for i in range(c):
             # formatting
             if i > 0:
-                retstr += ", "
+                retstr = "".join([retstr, ", "])
 
             # division_category_id
             execute("SELECT * FROM nextval('division_category_division_category_id_seq_1');")
@@ -83,9 +87,11 @@ class division:
             ids.append(id)
 
             # add to SQL string
-            retstr += "(" + str(id) + ",'" + names[i] + "')"
+            # sql += "(" + str(id) + ",'" + names[i] + "')"
+            sql = "(%s,'%s')" % (str(id), names[i])
+            retstr = "".join([retstr, sql])
         
-        retstr += ";"
+        retstr = "".join([retstr, ";"])
         return retstr
     
     def generate(cursor, c: int, division_category_id: int, outpost_id: int, leader_ids: list, vice_leader_ids: list, ids: list) -> str:
@@ -99,7 +105,7 @@ class division:
         for i in range(c):
             # formatting
             if i > 0:
-                retstr += ", "
+                retstr = "".join([retstr, ", "])
 
             # division_id
             execute("SELECT * FROM nextval('division_division_id_seq');")
@@ -108,7 +114,9 @@ class division:
             ids.append(id)
 
             # add to SQL string
-            retstr += '(' + str(id) + ',' + str(division_category_id) + ',' + str(outpost_id) + ',' + str(leader_ids[i]) + ',' + str(vice_leader_ids[i]) + ")"
-        
-        retstr += ";"
+            # sql += '(' + str(id) + ',' + str(division_category_id) + ',' + str(outpost_id) + ',' + str(leader_ids[i]) + ',' + str(vice_leader_ids[i]) + ")"
+            sql = "(%s,%s,%s,%s,%s)" % (str(id), str(division_category_id), str(outpost_id), str(leader_ids[i]), str(vice_leader_ids[i]))
+            retstr = "".join([retstr, sql])
+
+        retstr = "".join([retstr, ";"])
         return retstr
