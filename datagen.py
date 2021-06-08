@@ -145,8 +145,8 @@ start_time = time.time()
 for i in range(nOffices):
 
     # TESTING
-    if i == 1:
-        break
+    # if i == 1:
+    #     break
 
     conn, cursor, execute = openConn()
 
