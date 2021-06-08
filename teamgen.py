@@ -2,7 +2,7 @@ from datetime import date
 import persongen as pg
 import namegenerator
 
-def generate(cursor, c: int, division_id: int, leader_ids: list, junior_leader_ids: list, ids: list, gender: str, start_date: date) -> str:
+def generate(cursor, c: int, id_ctr: int, leader_team_history_id_ctr: int, division_id: int, leader_ids: list, junior_leader_ids: list, ids: list, gender: str, start_date: date) -> str:
     '''Generate the SQL command to insert a new team. Use update to insert junior or end_date'''
 
     execute = cursor.execute
@@ -17,20 +17,23 @@ def generate(cursor, c: int, division_id: int, leader_ids: list, junior_leader_i
             retstr = "".join([retstr, ", "])
 
         # team_id
-        execute("SELECT * FROM nextval('team_team_id_seq');")
-        seq = fetchone()
-        id = seq[0]
-        ids.append(id)
+        # execute("SELECT * FROM nextval('team_team_id_seq');")
+        # seq = fetchone()
+        # id = seq[0]
+        ids.append(id_ctr)
 
         # add to SQL string
-        retstr += "(%s,%s,%s,%s,'%s','%s','%s')" % (str(id), str(division_id), str(leader_ids[i]), str(junior_leader_ids[i]), namegenerator.gen(separator=' '), gender, str(start_date))
-        lthstr = "".join([lthstr, pg.leaderJoinTeam(cursor, leader_ids[i], id, False, start_date)])
-        lthstr = "".join([lthstr, pg.leaderJoinTeam(cursor, junior_leader_ids[i], id, True, start_date)])
+        retstr += "(%s,%s,%s,%s,'%s','%s','%s')" % (str(id_ctr), str(division_id), str(leader_ids[i]), str(junior_leader_ids[i]), namegenerator.gen(separator=' '), gender, str(start_date))
+        sql, leader_team_history_id_ctr = pg.leaderJoinTeam(cursor, leader_team_history_id_ctr, leader_ids[i], id_ctr, False, start_date)
+        lthstr = "".join([lthstr, sql])
+        sql, leader_team_history_id_ctr = pg.leaderJoinTeam(cursor, leader_team_history_id_ctr, junior_leader_ids[i], id_ctr, True, start_date)
+        lthstr = "".join([lthstr, sql])
 
-    retstr = "".join([retstr, ";"])
-    return "".join([retstr, lthstr])
+        id_ctr += 1
 
-def update(cursor, team_id: int, division_id: int = None, leader_id: int = None, junior_leader_id: int = None, gender: str = None, start_date: date = None, end_date: date = None, _date: date = None):
+    return ";".join([retstr, lthstr]), id_ctr, leader_team_history_id_ctr
+
+def update(cursor, team_id: int, team_history_id_ctr: int, division_id: int = None, leader_id: int = None, junior_leader_id: int = None, gender: str = None, start_date: date = None, end_date: date = None, _date: date = None):
     '''Generate the SQL command to update a row in team.'''
 
     retstr = "UPDATE team SET "
@@ -51,14 +54,16 @@ def update(cursor, team_id: int, division_id: int = None, leader_id: int = None,
             retstr = "".join([retstr, ", "])
         string = "leader_id = %s" % (str(leader_id))
         retstr = "".join([retstr, string])
-        aditionalqs += replaceTeamLeader(cursor, team_id, leader_id, False, _date)
+        sql, team_history_id_ctr = replaceTeamLeader(cursor, team_history_id_ctr, team_id, leader_id, False, _date)
+        aditionalqs = "".join([aditionalqs, sql])
         c += 1
     if junior_leader_id is not None:
         if c > 0:
             retstr = "".join([retstr, ", "])
         string = "junior_leader_id = %s" % (str(junior_leader_id))
         retstr = "".join([retstr, string])
-        aditionalqs += replaceTeamLeader(cursor, team_id, junior_leader_id, True, _date)
+        sql, team_history_id_ctr = replaceTeamLeader(cursor, team_history_id_ctr, team_id, junior_leader_id, True, _date)
+        aditionalqs = "".join([aditionalqs, sql])
         c += 1
     if gender is not None:
         if c > 0:
@@ -83,9 +88,9 @@ def update(cursor, team_id: int, division_id: int = None, leader_id: int = None,
     string = " WHERE team_id = %s;" % (str(team_id))
     retstr = "".join([retstr, string])
 
-    return "".join([aditionalqs, retstr])
+    return "".join([aditionalqs, retstr]), team_history_id_ctr
 
-def replaceTeamLeader(cursor, tid: int, lid: int, is_junior: bool, replace_date: date) -> str:
+def replaceTeamLeader(cursor, team_history_id_ctr: int, tid: int, lid: int, is_junior: bool, replace_date: date) -> str:
     '''Generate the SQL command to update leader_team_history for an active leader.'''
 
     execute = cursor.execute
@@ -105,11 +110,12 @@ def replaceTeamLeader(cursor, tid: int, lid: int, is_junior: bool, replace_date:
         retstr = "".join([retstr, "UPDATE leader_team_history SET leave_date = '%s' WHERE leave_date IS null AND leader_id = %s;" % (str(replace_date), str(oldlid))])
     
     # new leader joins
-    retstr = "".join([retstr, pg.leaderJoinTeam(cursor, lid, tid, is_junior, replace_date)])
+    sql, team_history_id_ctr = pg.leaderJoinTeam(cursor, team_history_id_ctr, lid, tid, is_junior, replace_date)
+    retstr = "".join([retstr, sql])
     
     # team gets updated
     if not is_junior:
         retstr = "".join([retstr, "UPDATE team SET leader_id = %s WHERE team_id = %s;" % (str(tid), str(lid))])
     else:
         retstr = "".join([retstr, "UPDATE team SET junior_leader_id = %s WHERE team_id = %s;" % (str(tid), str(lid))])
-    return retstr
+    return retstr, team_history_id_ctr

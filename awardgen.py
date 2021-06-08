@@ -3,7 +3,7 @@ import namegenerator
 from datetime import date
 
 # Una idea posible para diferenciar awards de diferentes divisiones o para lideres es agregar una columna a award
-def generate(cursor, c: int, ids: list, division_category_id: int = None, parent_award_id: int = None) -> str:
+def generate(cursor, c: int, id_ctr: int, ids: list, division_category_id: int = None, parent_award_id: int = None) -> str:
     '''Generate the SQL command to insert c new awards. They will be linearly dependent,
        i.e. the first award will be the parent to the second, the second to the third, etc.
         division_category_id: None if for leaders, otherwise give the appropriate id
@@ -11,7 +11,7 @@ def generate(cursor, c: int, ids: list, division_category_id: int = None, parent
     # gen = DocumentGenerator()
 
     execute = cursor.execute
-    fetchone = cursor.fetchone
+    # fetchone = cursor.fetchone
 
     retstr = "INSERT INTO award (award_id, name, division_category_id, parent_award_id) VALUES "
 
@@ -24,10 +24,10 @@ def generate(cursor, c: int, ids: list, division_category_id: int = None, parent
             retstr = "".join([retstr, ", "])
 
         # award_id
-        execute("SELECT * FROM nextval('award_award_id_seq');")
-        seq = fetchone()
-        id = seq[0]
-        ids.append(id)
+        # execute("SELECT * FROM nextval('award_award_id_seq');")
+        # seq = fetchone()
+        # id = seq[0]
+        ids.append(id_ctr)
         
         # name
         an = namegenerator.gen(separator=' ')
@@ -37,17 +37,18 @@ def generate(cursor, c: int, ids: list, division_category_id: int = None, parent
             parent_award_id = 'null'
         
         # add to SQL string
-        sql = "(%s,'%s',%s,%s)" % (str(id), an, str(division_category_id), str(parent_award_id))
+        sql = "(%s,'%s',%s,%s)" % (str(id_ctr), an, str(division_category_id), str(parent_award_id))
         retstr = "".join([retstr, sql])
 
         # parent_award_id for other loops
-        parent_award_id = id
+        parent_award_id = id_ctr
+        id_ctr += 1
 
     retstr = "".join([retstr, ";"])
 
-    return retstr
+    return retstr, id_ctr
 
-def requirementgen(cursor, c: int, ids: list, award_id: int) -> str:
+def requirementgen(cursor, c: int, id_ctr: int, ids: list, award_id: int) -> str:
     '''Generate the SQL command to insert c new requirements for the award award_id.'''
 
     execute = cursor.execute
@@ -61,22 +62,23 @@ def requirementgen(cursor, c: int, ids: list, award_id: int) -> str:
             retstr = "".join([retstr, ", "])
 
         # requirement_id
-        execute("SELECT * FROM nextval('requirement_requirement_id_seq');")
-        seq = fetchone()
-        id = seq[0]
-        ids.append(id)
+        # execute("SELECT * FROM nextval('requirement_requirement_id_seq');")
+        # seq = fetchone()
+        # id = seq[0]
+        ids.append(id_ctr)
         
         # descrption
         des = namegenerator.gen()   # generar una frase usando cadenas de Markov tomaba tiempo inecesariamente
         
         # add to SQL string
-        # sql = "(" + str(id) + ',' + str(award_id) + ",'" + des + "')"
-        sql = "(%s,%s,'%s')" % (str(id), str(award_id), des)
+        sql = "(%s,%s,'%s')" % (str(id_ctr), str(award_id), des)
         retstr = "".join([retstr, sql])
+
+        id_ctr += 1
 
     retstr = "".join([retstr, ';'])
 
-    return retstr
+    return retstr, id_ctr
 
 def giveRequirements(person_id: int, rids: list, leader_id: int, minDate: date, maxDate: date):
     '''Generate the SQL command to insert new rows into person_requirement.
@@ -97,7 +99,6 @@ def giveRequirements(person_id: int, rids: list, leader_id: int, minDate: date, 
         rd = miscgen.gendate(minDate, maxDate)
         
         # add to SQL string
-        # sql = "(" + str(person_id) + ',' + str(rids[i]) + ",'" + str(rd) + "'," + str(leader_id) + ")"
         sql = "(%s,%s,'%s',%s)" % (str(person_id), str(rids[i]), str(rd), str(leader_id))
         retstr = "".join([retstr, sql])
 
@@ -124,7 +125,6 @@ def giveAwards(person_id: int, aids: list, leader_id: int, minDate: date, maxDat
         rd = miscgen.gendate(minDate, maxDate)
         
         # add to SQL string
-        # sql = "(" + str(person_id) + ',' + str(aids[i]) + ",'" + str(rd) + "'," + str(leader_id) + ")"
         sql = "(%s,%s,'%s',%s)" % (str(person_id), str(aids[i]), str(rd), str(leader_id))
         retstr = "".join([retstr, sql])
 
