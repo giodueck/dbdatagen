@@ -7,6 +7,7 @@ import entitygen as eg
 import awardgen as ag
 import teamgen as tg
 
+import time
 from datetime import date
 import sys
 
@@ -138,6 +139,8 @@ for i in range(4):
 
     closeConn(conn, cursor)
 
+start_time = time.time()
+
 # Offices
 for i in range(nOffices):
 
@@ -241,14 +244,18 @@ for i in range(nOffices):
         execute(pg.generate(cursor, 1, leaderMinBirthday, leaderMaxBirthday, auxPersons))
         execute(pg.leadergen(cursor, 1, auxPersons, True, auxLeaders, startDate))
         award(cursor, auxPersons[s], 1, s)
-        if s < 3484:
-            execute(pg.leaderPause(cursor, auxPersons[s], startDate, today, False))
-        if s < 4000:
-            execute(tg.update(cursor, auxTeams[0], leader_id=auxLeaders[s], _date=today))
         if s < 2500:
             execute(tg.update(cursor, auxTeams[1], junior_leader_id=auxLeaders[s], _date=today))
-
+            execute(pg.leaderPause(cursor, auxPersons[s], startDate, today, False))
+            execute(tg.update(cursor, auxTeams[0], leader_id=auxLeaders[s], _date=today))
+        elif s < 3484:
+            execute(pg.leaderPause(cursor, auxPersons[s], startDate, today, False))
+            execute(tg.update(cursor, auxTeams[0], leader_id=auxLeaders[s], _date=today))
+        elif s < 4000:
+            execute(tg.update(cursor, auxTeams[0], leader_id=auxLeaders[s], _date=today))
     # commit for this office
     closeConn(conn, cursor)
 
 sys.stdout.write("\b done!  \n") # this ends the progress bar
+
+print("\nRuntime: %s seconds" % (time.time() - start_time))

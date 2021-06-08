@@ -27,7 +27,8 @@ entitygen: cada clase crea filas en la tabla de su nombre, division adicionalmen
 awardgen: generate crea awards con nombres aleatorios, y requirementgen genera requirements para un award usando un generador de oraciones. giveRequirement y genAward generan filas en person_requirement y person_award.
 
 # Dependencies
-command: "pip install pkgname"
+command: "pip install pkgname"\
+Paquetes:
 - psycopg2: interface for postgresql
 - names: name generator for persongen
 - namegenerator: name generator for team name and requirement description
